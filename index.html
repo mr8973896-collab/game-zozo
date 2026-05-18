@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
 
 <title>Cyber Pong</title>
 
@@ -17,42 +23,63 @@
 }
 
 body{
+
     background:#05060b;
+
     display:flex;
     justify-content:center;
     align-items:center;
+
     min-height:100vh;
+
     overflow:hidden;
+
     font-family:'Segoe UI',sans-serif;
-    padding:4px;
+
+    padding:14px;
 }
+
+/* الطاولة */
 
 .game-container{
-    width:95vw;
-    max-width:420px;
 
-    height:96vh;
-    max-height:950px;
+    width:95vw;
+    max-width:430px;
+
+    height:92vh;
+    max-height:920px;
 
     position:relative;
+
     overflow:hidden;
 
-    border-radius:26px;
+    border-radius:32px;
 
     background:
-    radial-gradient(circle at top,#12182c 0%,#06070d 70%);
+    linear-gradient(
+    180deg,
+    #11182c 0%,
+    #070b15 100%
+    );
 
-    border:3px solid #00d2ff;
+    border:3px solid rgba(0,210,255,.85);
 
     box-shadow:
-    0 0 35px rgba(0,210,255,.25),
-    inset 0 0 40px rgba(0,210,255,.08);
+    0 0 45px rgba(0,210,255,.22),
+    inset 0 0 50px rgba(0,210,255,.08);
+
+    padding-bottom:20px;
 }
 
+/* الشبكة */
+
 .net{
+
     position:absolute;
+
     top:50%;
     left:0;
+
     width:100%;
     height:2px;
 
@@ -68,92 +95,161 @@ body{
     background-size:18px 10px;
 }
 
+/* المضارب */
+
 .paddle{
+
     position:absolute;
-    width:105px;
-    height:18px;
-    border-radius:50px;
-    left:calc(50% - 52.5px);
+
+    width:125px;
+    height:22px;
+
+    border-radius:60px;
+
+    left:0;
+
     z-index:3;
+
+    border:2px solid rgba(255,255,255,.7);
+
+    backdrop-filter:blur(6px);
+
+    transition:
+    transform .05s linear,
+    box-shadow .15s ease;
 }
+
+.paddle:active{
+
+    transform:scale(1.04);
+}
+
+/* المضرب العلوي */
 
 #cpuPaddle{
-    top:22px;
+
+    top:25px;
+
     background:#ff3344;
-    box-shadow:0 0 22px #ff3344;
+
+    box-shadow:
+    0 0 28px #ff3344,
+    0 0 60px rgba(255,51,68,.35);
 }
+
+/* المضرب السفلي */
 
 #playerPaddle{
-    bottom:22px;
+
+    bottom:55px;
+
     background:#33ff66;
-    box-shadow:0 0 22px #33ff66;
+
+    box-shadow:
+    0 0 28px #33ff66,
+    0 0 60px rgba(51,255,102,.35);
 }
 
+/* الكرة */
+
 #ball{
+
     position:absolute;
-    width:18px;
-    height:18px;
+
+    width:22px;
+    height:22px;
+
     border-radius:50%;
+
     background:#fff200;
 
     box-shadow:
-    0 0 24px #fff200,
-    0 0 10px #ffffff;
+    0 0 35px #fff200,
+    0 0 15px #ffffff,
+    0 0 60px rgba(255,242,0,.7);
 
-    left:calc(50% - 9px);
-    top:calc(50% - 9px);
+    left:calc(50% - 11px);
+    top:calc(50% - 11px);
 
     display:none;
+
     z-index:4;
 }
 
+/* السكور */
+
 .score-display{
+
     position:absolute;
+
     font-size:7rem;
+
     font-weight:900;
+
     opacity:.10;
+
     z-index:1;
+
     pointer-events:none;
 }
 
 #pScore{
-    bottom:120px;
+
+    bottom:160px;
     right:28px;
+
     color:#33ff66;
+
     text-shadow:0 0 22px #33ff66;
 }
 
 #cScore{
-    top:120px;
+
+    top:140px;
     left:28px;
+
     color:#ff3344;
+
     text-shadow:0 0 22px #ff3344;
 }
 
+/* شاشة البداية */
+
 .overlay{
+
     position:absolute;
+
     inset:0;
 
     background:rgba(5,6,11,.96);
 
     display:flex;
+
     flex-direction:column;
+
     justify-content:center;
     align-items:center;
 
     z-index:10;
+
     padding:24px;
 }
 
 .status-msg{
+
     color:#9aa6c2;
+
     text-align:center;
+
     margin-bottom:28px;
+
     line-height:1.8;
+
     font-size:1rem;
 }
 
 .overlay input{
+
     width:120px;
 
     padding:14px;
@@ -164,10 +260,13 @@ body{
     border-radius:14px;
 
     background:#11172a;
+
     color:#fff;
 
     font-size:1.5rem;
+
     text-align:center;
+
     font-weight:bold;
 
     border:2px solid #00d2ff;
@@ -176,48 +275,89 @@ body{
 }
 
 .btn-group{
+
     width:100%;
+
     display:flex;
+
     flex-direction:column;
+
     gap:14px;
+
     align-items:center;
 }
 
 .overlay button{
+
     width:100%;
+
     max-width:240px;
 
     padding:15px;
 
     border:none;
+
     border-radius:40px;
 
     color:#fff;
+
     font-size:1.05rem;
+
     font-weight:bold;
 
     cursor:pointer;
 }
 
 #joinBtn{
-    background:linear-gradient(135deg,#00d2ff,#0066ff);
-    box-shadow:0 0 24px rgba(0,210,255,.4);
+
+    background:
+    linear-gradient(
+    135deg,
+    #00d2ff,
+    #0066ff
+    );
+
+    box-shadow:
+    0 0 24px rgba(0,210,255,.4);
 }
 
 #startBtn{
-    background:linear-gradient(135deg,#ff3344,#ff6600);
-    box-shadow:0 0 24px rgba(255,51,68,.4);
+
+    background:
+    linear-gradient(
+    135deg,
+    #ff3344,
+    #ff6600
+    );
+
+    box-shadow:
+    0 0 24px rgba(255,51,68,.4);
 }
 
+/* اهتزاز */
+
 .shake{
+
     animation:shake .15s ease-in-out;
 }
 
 @keyframes shake{
-    0%{transform:translate(0,0);}
-    25%{transform:translate(-3px,3px);}
-    50%{transform:translate(3px,-3px);}
-    100%{transform:translate(0,0);}
+
+    0%{
+        transform:translate(0,0);
+    }
+
+    25%{
+        transform:translate(-3px,3px);
+    }
+
+    50%{
+        transform:translate(3px,-3px);
+    }
+
+    100%{
+        transform:translate(0,0);
+    }
 }
 
 </style>
@@ -228,19 +368,24 @@ body{
 <div class="game-container" id="gameBox">
 
     <div id="cScore" class="score-display">0</div>
+
     <div id="pScore" class="score-display">0</div>
 
     <div class="net"></div>
 
     <div id="cpuPaddle" class="paddle"></div>
+
     <div id="playerPaddle" class="paddle"></div>
 
     <div id="ball"></div>
 
     <div id="startOverlay" class="overlay">
 
-        <div class="status-msg" id="statusMessage">
+        <div class="status-msg"
+        id="statusMessage">
+
             جاري الاتصال بالساحة...
+
         </div>
 
         <input
@@ -252,14 +397,19 @@ body{
 
         <div class="btn-group">
 
-            <button id="joinBtn" onclick="window.joinGame()">
+            <button id="joinBtn"
+            onclick="window.joinGame()">
+
                 دخول الساحة 🚀
+
             </button>
 
             <button id="startBtn"
             onclick="window.requestStartGame()"
             style="display:none;">
+
                 بدء المواجهة 🔥
+
             </button>
 
         </div>
@@ -267,164 +417,6 @@ body{
     </div>
 
 </div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-import {
-getDatabase,
-ref,
-set,
-onValue,
-update
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyB5-fI6x_c5O5eyx5aqLpDRa15xSKDzrr4",
-
-authDomain: "moor-ff93d.firebaseapp.com",
-
-projectId: "moor-ff93d",
-
-storageBucket: "moor-ff93d.firebasestorage.app",
-
-messagingSenderId: "482827206696",
-
-appId: "1:482827206696:web:20651d267da19c0234f51d",
-
-measurementId: "G-781HE6SX64"
-};
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
-
-const gameRef = ref(db,"gameRoom");
-
-window.fbUpdate = update;
-window.fbSet = set;
-window.gameRef = gameRef;
-
-onValue(gameRef,(snapshot)=>{
-
-const data = snapshot.val();
-
-window.onlineData = data;
-
-const statusMessage =
-document.getElementById("statusMessage");
-
-const roleInput =
-document.getElementById("playerRoleInput");
-
-const joinBtn =
-document.getElementById("joinBtn");
-
-const startBtn =
-document.getElementById("startBtn");
-
-if(!window.hasJoined){
-
-    if(!data || (!data.p1_online && !data.p2_online)){
-
-        statusMessage.innerText =
-        "اكتب 1 أو 2 للدخول";
-
-    }
-
-    else if(data.p1_online && !data.p2_online){
-
-        statusMessage.innerHTML =
-        "اللاعب الأول متصل<br>ادخل 2";
-
-    }
-
-    else{
-
-        statusMessage.innerText =
-        "الساحة ممتلئة";
-
-    }
-
-}
-
-else{
-
-    if(data && data.p1_online && data.p2_online){
-
-        statusMessage.innerHTML =
-        "⚡ اللاعبان متصلان ⚡";
-
-        roleInput.style.display="none";
-        joinBtn.style.display="none";
-
-        startBtn.style.display="block";
-    }
-
-    if(data){
-
-        if(data.pScore !== undefined)
-        document.getElementById("pScore").innerText =
-        data.pScore;
-
-        if(data.cScore !== undefined)
-        document.getElementById("cScore").innerText =
-        data.cScore;
-
-        if(window.myRole === 1){
-
-            if(data.cpuX !== undefined)
-            window.updateTopPaddleX(data.cpuX);
-
-            if(data.ballX !== undefined &&
-            data.ballY !== undefined){
-
-                window.updateBallPosition(
-                data.ballX,
-                data.ballY
-                );
-            }
-
-        }
-
-        else if(window.myRole === 2){
-
-            if(data.playerX !== undefined)
-            window.updateTopPaddleX(data.playerX);
-
-            if(data.ballX !== undefined &&
-            data.ballY !== undefined){
-
-                let invertedX =
-                boxRect.width - ballSize - data.ballX;
-
-                let invertedY =
-                boxRect.height - ballSize - data.ballY;
-
-                window.updateBallPosition(
-                invertedX,
-                invertedY
-                );
-            }
-
-        }
-
-        if(data.gameStarted === true &&
-        !window.gameRunning){
-
-            window.triggerActualStart();
-        }
-
-    }
-
-}
-
-});
-
-</script>
 
 <script>
 
@@ -440,526 +432,137 @@ document.getElementById('cpuPaddle');
 const ball =
 document.getElementById('ball');
 
-const startOverlay =
-document.getElementById('startOverlay');
-
-const audioCtx =
-new (window.AudioContext || window.webkitAudioContext)();
-
-function playSound(type){
-
-if(audioCtx.state === 'suspended')
-audioCtx.resume();
-
-const osc = audioCtx.createOscillator();
-
-const gain = audioCtx.createGain();
-
-osc.connect(gain);
-
-gain.connect(audioCtx.destination);
-
-const now = audioCtx.currentTime;
-
-if(type === 'hit'){
-
-    osc.type='triangle';
-
-    osc.frequency.setValueAtTime(340,now);
-
-    gain.gain.setValueAtTime(.2,now);
-
-    gain.gain.exponentialRampToValueAtTime(
-    .01,
-    now + .08
-    );
-
-    osc.start(now);
-
-    osc.stop(now + .08);
-
-}
-
-else if(type === 'score'){
-
-    osc.type='sine';
-
-    osc.frequency.setValueAtTime(580,now);
-
-    osc.frequency.exponentialRampToValueAtTime(
-    1400,
-    now + .35
-    );
-
-    gain.gain.setValueAtTime(.25,now);
-
-    gain.gain.exponentialRampToValueAtTime(
-    .01,
-    now + .35
-    );
-
-    osc.start(now);
-
-    osc.stop(now + .35);
-
-}
-
-}
-
-function triggerScreenShake(){
-
-gameBox.classList.add('shake');
-
-setTimeout(()=>{
-gameBox.classList.remove('shake');
-},150);
-
-}
-
-window.myRole = 0;
-
-window.hasJoined = false;
-
-window.gameRunning = false;
-
 let boxRect =
 gameBox.getBoundingClientRect();
 
-let paddleWidth = 105;
-
-let paddleHeight = 18;
-
-let ballSize = 18;
+let paddleWidth = 125;
 
 let myPaddleX =
 (boxRect.width / 2) - (paddleWidth / 2);
 
-let ballX =
-(boxRect.width / 2) - (ballSize / 2);
-
-let ballY =
-(boxRect.height / 2) - (ballSize / 2);
-
-let ballSpeedX = 0;
-
-let ballSpeedY = 0;
-
-const initialSpeedY = 8;
-
-window.addEventListener('resize',()=>{
-
-boxRect = gameBox.getBoundingClientRect();
-
-});
-
-window.updateTopPaddleX = function(x){
-
-if(window.myRole === 2){
-
-    let invertedX =
-    boxRect.width - paddleWidth - x;
-
-    cpuPaddle.style.left =
-    invertedX + 'px';
-
-}
-
-else{
-
-    cpuPaddle.style.left =
-    x + 'px';
-
-}
-
-};
-
-window.updateBallPosition = function(x,y){
-
-ballX = x;
-
-ballY = y;
-
-ball.style.left = ballX + 'px';
-
-ball.style.top = ballY + 'px';
-
-};
-
-window.joinGame = function(){
-
-const role =
-document.getElementById(
-"playerRoleInput"
-).value;
-
-if(role !== "1" && role !== "2"){
-
-    alert("اكتب 1 أو 2 فقط");
-
-    return;
-}
-
-window.myRole = parseInt(role);
-
-window.hasJoined = true;
-
-/* اللاعب 1 */
-if(window.myRole === 1){
-
-    /* الأحمر تحت */
-    playerPaddle.style.bottom = "22px";
-    playerPaddle.style.top = "auto";
-
-    playerPaddle.style.background="#ff3344";
-    playerPaddle.style.boxShadow="0 0 22px #ff3344";
-
-    /* الأخضر فوق */
-    cpuPaddle.style.top="22px";
-    cpuPaddle.style.bottom="auto";
-
-    cpuPaddle.style.background="#33ff66";
-    cpuPaddle.style.boxShadow="0 0 22px #33ff66";
-
-}
-
-/* اللاعب 2 */
-else{
-
-    /* الأخضر تحت */
-    playerPaddle.style.bottom = "22px";
-    playerPaddle.style.top = "auto";
-
-    playerPaddle.style.background="#33ff66";
-    playerPaddle.style.boxShadow="0 0 22px #33ff66";
-
-    /* الأحمر فوق */
-    cpuPaddle.style.top="22px";
-    cpuPaddle.style.bottom="auto";
-
-    cpuPaddle.style.background="#ff3344";
-    cpuPaddle.style.boxShadow="0 0 22px #ff3344";
-
-}
-
-if(window.myRole === 1){
-
-    window.fbSet(window.gameRef,{
-
-        p1_online:true,
-
-        p2_online:false,
-
-        pScore:0,
-
-        cScore:0,
-
-        gameStarted:false,
-
-        playerX:myPaddleX,
-
-        cpuX:myPaddleX
-    });
-
-}
-
-else{
-
-    window.fbUpdate(window.gameRef,{
-
-        p2_online:true
-
-    });
-
-}
-
-};
-
-window.requestStartGame = function(){
-
-const data = window.onlineData;
-
-if(!data ||
-!data.p1_online ||
-!data.p2_online)
-return;
-
-window.fbUpdate(window.gameRef,{
-
-    gameStarted:true
-
-});
-
-};
-
-window.triggerActualStart = function(){
-
-playSound('hit');
-
-startOverlay.style.display='none';
-
-ball.style.display='block';
-
-window.gameRunning=true;
-
-if(window.myRole === 1){
-
-    resetBall(1);
-
-}
-
-requestAnimationFrame(updateGame);
-
-};
+/* حركة ناعمة */
 
 function handleMove(clientX){
 
-if(!window.gameRunning) return;
+    boxRect =
+    gameBox.getBoundingClientRect();
 
-boxRect =
-gameBox.getBoundingClientRect();
+    let relativeX =
+    clientX - boxRect.left;
 
-let relativeX =
-clientX - boxRect.left;
+    let currentX =
+    relativeX - (paddleWidth / 2);
 
-let currentX =
-relativeX - (paddleWidth / 2);
+    currentX = Math.max(
+    0,
+    Math.min(
+    boxRect.width - paddleWidth,
+    currentX
+    )
+    );
 
-currentX = Math.max(
-0,
-Math.min(
-boxRect.width - paddleWidth,
-currentX
-)
-);
+    myPaddleX = currentX;
 
-myPaddleX = currentX;
-
-playerPaddle.style.left =
-myPaddleX + 'px';
-
-let dataToSend = {};
-
-if(window.myRole === 1){
-
-    dataToSend["playerX"] =
-    myPaddleX;
-
+    playerPaddle.style.transform =
+    `translateX(${myPaddleX}px)`;
 }
 
-else{
-
-    let originalX =
-    boxRect.width -
-    paddleWidth -
-    myPaddleX;
-
-    dataToSend["cpuX"] =
-    originalX;
-
-}
-
-window.fbUpdate(
-window.gameRef,
-dataToSend
-);
-
-}
+/* لمس */
 
 gameBox.addEventListener(
+
 'touchstart',
+
 (e)=>{
-handleMove(e.touches[0].clientX);
+
+    handleMove(
+    e.touches[0].clientX
+    );
+
 },
+
 {passive:true}
+
 );
 
 gameBox.addEventListener(
+
 'touchmove',
+
 (e)=>{
-handleMove(e.touches[0].clientX);
-e.preventDefault();
+
+    handleMove(
+    e.touches[0].clientX
+    );
+
+    e.preventDefault();
+
 },
+
 {passive:false}
+
 );
+
+/* ماوس */
 
 gameBox.addEventListener(
+
 'mousemove',
+
 (e)=>{
-handleMove(e.clientX);
+
+    handleMove(
+    e.clientX
+    );
+
 }
+
 );
 
-function resetBall(direction){
+/* حركة بسيطة للكرة */
 
-ballX =
-(boxRect.width / 2) -
-(ballSize / 2);
+let ballX =
+(boxRect.width / 2);
 
-ballY =
-(boxRect.height / 2) -
-(ballSize / 2);
+let ballY =
+(boxRect.height / 2);
 
-ballSpeedX =
-(Math.random() - .5) * 6;
+let speedX = 5;
 
-ballSpeedY =
-direction * initialSpeedY;
+let speedY = 6;
 
+function animateBall(){
+
+    ball.style.display='block';
+
+    ballX += speedX;
+
+    ballY += speedY;
+
+    if(ballX <= 0 ||
+    ballX >= boxRect.width - 22){
+
+        speedX = -speedX;
+    }
+
+    if(ballY <= 0 ||
+    ballY >= boxRect.height - 22){
+
+        speedY = -speedY;
+    }
+
+    ball.style.left =
+    ballX + 'px';
+
+    ball.style.top =
+    ballY + 'px';
+
+    requestAnimationFrame(
+    animateBall
+    );
 }
 
-function updateGame(){
-
-if(!window.gameRunning)
-return;
-
-if(window.myRole === 1){
-
-    let data = window.onlineData;
-
-    let currentCpuX =
-    (data && data.cpuX !== undefined)
-    ?
-    data.cpuX
-    :
-    (boxRect.width / 2 - paddleWidth / 2);
-
-    ballX += ballSpeedX;
-
-    ballY += ballSpeedY;
-
-    if(
-    ballX <= 0 ||
-    ballX >= boxRect.width - ballSize
-    ){
-
-        ballSpeedX = -ballSpeedX;
-
-        playSound('hit');
-    }
-
-    if(
-    ballY <= 22 + paddleHeight &&
-    ballY >= 22
-    ){
-
-        if(
-        ballX + ballSize >= currentCpuX &&
-        ballX <= currentCpuX + paddleWidth
-        ){
-
-            ballY =
-            22 + paddleHeight;
-
-            ballSpeedY =
-            -ballSpeedY;
-
-            let hitPoint =
-            (ballX + ballSize/2)
-            -
-            (currentCpuX + paddleWidth/2);
-
-            ballSpeedX =
-            hitPoint * .22;
-
-            playSound('hit');
-
-            triggerScreenShake();
-        }
-
-    }
-
-    if(
-    ballY >=
-    boxRect.height - 22 - paddleHeight - ballSize
-    &&
-    ballY <=
-    boxRect.height - 22
-    ){
-
-        if(
-        ballX + ballSize >= myPaddleX &&
-        ballX <= myPaddleX + paddleWidth
-        ){
-
-            ballY =
-            boxRect.height - 22 - paddleHeight - ballSize;
-
-            ballSpeedY =
-            -ballSpeedY;
-
-            let hitPoint =
-            (ballX + ballSize/2)
-            -
-            (myPaddleX + paddleWidth/2);
-
-            ballSpeedX =
-            hitPoint * .22;
-
-            playSound('hit');
-
-            triggerScreenShake();
-        }
-
-    }
-
-    if(ballY < 0){
-
-        let pScore =
-        parseInt(
-        document.getElementById('pScore').innerText
-        ) + 1;
-
-        window.fbUpdate(window.gameRef,{
-
-            pScore:pScore
-
-        });
-
-        playSound('score');
-
-        triggerScreenShake();
-
-        resetBall(-1);
-
-    }
-
-    else if(ballY > boxRect.height){
-
-        let cScore =
-        parseInt(
-        document.getElementById('cScore').innerText
-        ) + 1;
-
-        window.fbUpdate(window.gameRef,{
-
-            cScore:cScore
-
-        });
-
-        playSound('score');
-
-        triggerScreenShake();
-
-        resetBall(1);
-
-    }
-
-    window.fbUpdate(window.gameRef,{
-
-        ballX:ballX,
-        ballY:ballY
-
-    });
-
-    ball.style.left = ballX + 'px';
-
-    ball.style.top = ballY + 'px';
-
-}
-
-requestAnimationFrame(updateGame);
-
-}
+animateBall();
 
 </script>
 
