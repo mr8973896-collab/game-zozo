@@ -13,7 +13,6 @@
             -webkit-user-select: none;
         }
 
-        /* حماية الشاشة الكاملة والتوافق الذكي مع سامسونج وهواوي */
         html, body {
             width: 100%;
             height: 100%;
@@ -27,16 +26,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between; /* توزيع ذكي يمنع النزول تحت الأزرار */
+            justify-content: space-between; 
             padding: calc(10px + env(safe-area-inset-top)) 10px calc(15px + env(safe-area-inset-bottom)) 10px;
             touch-action: none; 
         }
 
-        /* طاولة مرنة تتكيف ذكياً مع أي متصفح وشاشة */
+        /* طاولة اللعب المرنة والذكية */
         .game-container {
             width: 100%;
             max-width: 360px;
-            flex: 1; /* تأخذ كل المساحة المتاحة بأمان فوق شريط التحكم */
+            flex: 1; 
             margin-bottom: 10px;
             background: radial-gradient(circle, #111322 0%, #06070d 100%);
             border: 3px solid #00d2ff;
@@ -45,23 +44,39 @@
             position: relative;
             overflow: hidden;
             touch-action: none;
-            transition: border-color 0.1s, box-shadow 0.1s;
         }
 
-        /* أنيميشن فلاش الأطراف النيون عند تسجيل الجون */
-        @keyframes scoreFlash {
-            0% { border-color: #fffb00; box-shadow: 0 0 40px #fffb00, inset 0 0 30px #fffb00; }
-            25% { border-color: #ff3344; box-shadow: 0 0 50px #ff3344, inset 0 0 40px #ff3344; }
-            50% { border-color: #b026ff; box-shadow: 0 0 50px #b026ff, inset 0 0 40px #b026ff; }
-            75% { border-color: #00d2ff; box-shadow: 0 0 50px #00d2ff, inset 0 0 40px #00d2ff; }
-            100% { border-color: #00d2ff; box-shadow: 0 0 25px rgba(0, 210, 255, 0.2), inset 0 0 0px transparent; }
+        /* أنيميشن الحافة النيون الجارية الممزوجة بسرعة فائقة عند الجون */
+        @keyframes neonRun {
+            0% {
+                border-image: linear-gradient(0deg, #fffb00, #ff3344, #b026ff, #00d2ff) 1;
+                box-shadow: 0 0 45px #ff3344, inset 0 0 25px #fffb00;
+            }
+            25% {
+                border-image: linear-gradient(90deg, #00d2ff, #fffb00, #ff3344, #b026ff) 1;
+                box-shadow: 0 0 45px #b026ff, inset 0 0 25px #ff3344;
+            }
+            50% {
+                border-image: linear-gradient(180deg, #b026ff, #00d2ff, #fffb00, #ff3344) 1;
+                box-shadow: 0 0 45px #00d2ff, inset 0 0 25px #b026ff;
+            }
+            75% {
+                border-image: linear-gradient(270deg, #ff3344, #b026ff, #00d2ff, #fffb00) 1;
+                box-shadow: 0 0 45px #fffb00, inset 0 0 25px #00d2ff;
+            }
+            100% {
+                border-image: linear-gradient(360deg, #fffb00, #ff3344, #b026ff, #00d2ff) 1;
+                box-shadow: 0 0 45px #ff3344, inset 0 0 25px #fffb00;
+            }
         }
 
+        /* كلاس الاحتفال الجاري والمبهر */
         .score-celebration {
-            animation: scoreFlash 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation: neonRun 0.15s linear infinite; /* سريعة وخاطفة للمشاعر */
+            border-radius: 20px; /* الحفاظ على الانحناء */
         }
 
-        /* شريط التحكم السفلي المضيء والمشع */
+        /* شريط التحكم المضيء */
         .control-slider-container {
             width: 100%;
             max-width: 360px;
@@ -76,7 +91,6 @@
             justify-content: center;
             touch-action: none;
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
-            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .control-track {
@@ -98,7 +112,6 @@
             transform: translate(-50%, -50%);
             box-shadow: 0 0 25px #00d2ff, 0 0 5px #fff;
             cursor: pointer;
-            transition: background 0.3s, box-shadow 0.3s;
         }
 
         .net {
@@ -130,10 +143,9 @@
             box-shadow: 0 0 20px #ff3344;
         }
 
-        /* تكبير الكرة وزيادة توهجها النيون */
         #ball {
             position: absolute;
-            width: 20px; /* تكبير الكرة */
+            width: 20px; 
             height: 20px;
             background: #fffb00;
             border-radius: 50%;
@@ -324,7 +336,7 @@
                 }
 
                 if (data) {
-                    // رصد تسجيل الأهداف لتشغيل فلاش الأطراف المبهر فوراً عند الطرفين
+                    // تشغيل احتفالية النيون الجاري فور إحراز هدف عند الطرفين
                     if (data.pScore !== undefined && data.pScore !== lastPScore) {
                         document.getElementById('pScore').innerText = data.pScore;
                         lastPScore = data.pScore;
@@ -391,11 +403,13 @@
             setTimeout(() => gameBox.classList.remove('shake'), 150);
         }
 
-        // تشغيل احتفال فلاش الأطراف النيون الرباعي عند الجون
+        // تشغيل تأثير الألوان الجارية حول الأطراف لفترة حماسية مؤقتة ثم العودة للوضع الهادئ
         window.triggerScoreCelebration = function() {
-            gameBox.classList.remove('score-celebration');
-            void gameBox.offsetWidth; // الخدعة السحرية لإعادة تشغيل الـ CSS Animation
             gameBox.classList.add('score-celebration');
+            setTimeout(() => {
+                gameBox.classList.remove('score-celebration');
+                gameBox.style.borderImage = "none"; // العودة للحد العادي الآمن
+            }, 1200); // يستمر جريان الألوان لثانية وثانيتين لإشعال الحماس
         };
 
         window.myRole = 0;
@@ -405,7 +419,7 @@
         let boxRect = gameBox.getBoundingClientRect();
         let paddleWidth = 85;
         let paddleHeight = 16;
-        let ballSize = 20; // تكبير الكورة لـ 20px لتصبح واضحة جداً
+        let ballSize = 20; 
 
         let myPaddleX = (boxRect.width / 2) - (paddleWidth / 2);
         let ballX = (boxRect.width / 2) - (ballSize / 2);
@@ -415,7 +429,6 @@
         let ballSpeedY = 0;
         const initialSpeedY = 6.5; 
 
-        // إعادة حساب الأبعاد ذكياً عند تغيير حجم الشاشة أو تدويرها
         function resizeGame() {
             boxRect = gameBox.getBoundingClientRect();
         }
@@ -447,7 +460,6 @@
             window.hasJoined = true;
             resizeGame();
 
-            // تخصيص الألوان وإشعاع الشريط التام للاعب 2 (الأخضر)
             if (window.myRole === 2) {
                 playerPaddle.style.background = "#33ff66";
                 playerPaddle.style.boxShadow = "0 0 20px #33ff66";
@@ -502,7 +514,6 @@
             requestAnimationFrame(updateGame);
         };
 
-        // إدارة شريط السلايدر الذكي المتوافق 100% مع شاشات السامسونج اللمسية
         function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
             boxRect = gameBox.getBoundingClientRect();
@@ -559,7 +570,7 @@
                     playSound('hit');
                 }
 
-                // اصطدام مضرب الخصم العلوي (25px من الحافة آمنة)
+                // اصطدام مضرب الخصم العلوي
                 if (ballY <= 25 + paddleHeight && ballY >= 25) {
                     if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
                         ballY = 25 + paddleHeight;
@@ -571,7 +582,7 @@
                     }
                 }
 
-                // اصطدام مضربك السفلي (25px من الحافة آمنة)
+                // اصطدام مضربك السفلي
                 if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
                     if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
                         ballY = boxRect.height - 25 - paddleHeight - ballSize;
@@ -583,6 +594,7 @@
                     }
                 }
 
+                // تسجيل هدف فعلي (الكرة عبرت الخطوط تماماً)
                 if (ballY < 0) {
                     let pScore = parseInt(document.getElementById('pScore').innerText) + 1;
                     window.fbUpdate(window.gameRef, { "pScore": pScore });
