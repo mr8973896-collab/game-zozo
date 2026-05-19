@@ -18,56 +18,94 @@
             color: #fff;
             font-family: 'Segoe UI', sans-serif;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
             touch-action: none; 
-            padding: 5px;
+            padding: 10px;
         }
 
-        /* طاولة طويلة واحترافية جداً للموبايل */
+        /* ضبط حجم طاولة اللعب بشكل متناسق ومضمون يظهر بالكامل */
         .game-container {
             width: 95vw;
-            max-width: 390px;
-            height: 92vh; /* زيادة الطول ليعطي مساحة لعب طويلة وحماسية */
-            max-height: 850px;
+            max-width: 360px;
+            height: 68vh; /* تقصير الارتفاع لترك مساحة آمنة بالأسفل */
+            max-height: 550px;
             background: radial-gradient(circle, #111322 0%, #06070d 100%);
             border: 3px solid #00d2ff;
             border-radius: 20px;
-            box-shadow: 0 0 35px rgba(0, 210, 255, 0.25);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.2);
             position: relative;
             overflow: hidden;
             touch-action: none; 
         }
 
+        /* شريط التحكم الجديد بالأسفل للتحريك يميناً ويساراً */
+        .control-slider-container {
+            width: 95vw;
+            max-width: 360px;
+            margin-top: 15px;
+            background: #111322;
+            border: 2px solid #00d2ff;
+            border-radius: 15px;
+            height: 60px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+        }
+
+        .control-track {
+            width: 85%;
+            height: 6px;
+            background: rgba(0, 210, 255, 0.2);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .control-knob {
+            width: 45px;
+            height: 25px;
+            background: #00d2ff;
+            border-radius: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px #00d2ff;
+            cursor: pointer;
+        }
+
         .net {
             position: absolute;
             top: 50%; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.3) 30%);
+            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.2) 30%);
             background-size: 15px 10px;
             transform: translateY(-50%);
         }
 
         .paddle {
             position: absolute;
-            width: 95px;
+            width: 85px;
             height: 16px; 
             border-radius: 30px;
-            left: calc(50% - 47.5px);
+            left: calc(50% - 42.5px);
             transition: none; 
-            cursor: pointer;
         }
 
         /* الوضع الافتراضي للاعب 1 (الأحمر تحت والأخضر فوق) */
         #cpuPaddle {
-            top: 20px;
+            top: 25px;
             background: #33ff66;
             box-shadow: 0 0 20px #33ff66;
         }
 
         #playerPaddle {
-            bottom: 20px;
+            bottom: 25px; /* مسافة آمنة من الأسفل لضمان الرؤية الكاملة */
             background: #ff3344;
             box-shadow: 0 0 20px #ff3344;
         }
@@ -88,7 +126,7 @@
         /* أرقام السكور النيون مجردة تماماً في الخلفية */
         .score-display {
             position: absolute;
-            font-size: 6rem;
+            font-size: 5rem;
             font-weight: 900;
             opacity: 0.12;
             z-index: 1;
@@ -96,14 +134,14 @@
         }
 
         #pScore {
-            bottom: 100px;
+            bottom: 70px;
             right: 25px;
             color: #ff3344;
             text-shadow: 0 0 20px #ff3344;
         }
 
         #cScore {
-            top: 100px;
+            top: 70px;
             left: 25px;
             color: #33ff66;
             text-shadow: 0 0 20px #33ff66;
@@ -214,6 +252,12 @@
         </div>
     </div>
 
+    <div class="control-slider-container" id="sliderContainer">
+        <div class="control-track">
+            <div class="control-knob" id="sliderKnob"></div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -265,7 +309,6 @@
                     if (data.pScore !== undefined) document.getElementById('pScore').innerText = data.pScore;
                     if (data.cScore !== undefined) document.getElementById('cScore').innerText = data.cScore;
 
-                    // معالجة عكس إحداثيات الكرة والمضارب ذكياً للاعب 2 ليرى الأخضر بالأسفل دائماً
                     if (window.myRole === 1) {
                         if (data.cpuX !== undefined) window.updateTopPaddleX(data.cpuX);
                         if (data.ballX !== undefined && data.ballY !== undefined) window.updateBallPosition(data.ballX, data.ballY);
@@ -294,6 +337,8 @@
         const pScoreDisplay = document.getElementById('pScore');
         const cScoreDisplay = document.getElementById('cScore');
         const startOverlay = document.getElementById('startOverlay');
+        const sliderContainer = document.getElementById('sliderContainer');
+        const sliderKnob = document.getElementById('sliderKnob');
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -324,7 +369,7 @@
         window.gameRunning = false;
 
         let boxRect = gameBox.getBoundingClientRect();
-        let paddleWidth = 95;
+        let paddleWidth = 85;
         let paddleHeight = 16;
         let ballSize = 16;
 
@@ -334,13 +379,12 @@
 
         let ballSpeedX = 0;
         let ballSpeedY = 0;
-        const initialSpeedY = 7.5; 
+        const initialSpeedY = 6.5; 
 
         window.addEventListener('resize', () => {
             boxRect = gameBox.getBoundingClientRect();
         });
 
-        // تحديث المضرب العلوي للخصم
         window.updateTopPaddleX = function(x) { 
             if (window.myRole === 2) {
                 let invertedX = boxRect.width - paddleWidth - x;
@@ -365,20 +409,22 @@
             window.myRole = parseInt(roleInput);
             window.hasJoined = true;
 
-            // إذا كان اللاعب هو "اللاعب 2"، نقوم بقلب العناصر بملعبه ليصبح مضربه الأخضر بالأسفل والأحمر بالأعلى
             if (window.myRole === 2) {
                 playerPaddle.style.background = "#33ff66";
                 playerPaddle.style.boxShadow = "0 0 20px #33ff66";
                 cpuPaddle.style.background = "#ff3344";
                 cpuPaddle.style.boxShadow = "0 0 20px #ff3344";
+                sliderKnob.style.background = "#33ff66";
+                sliderKnob.style.boxShadow = "0 0 15px #33ff66";
+                sliderContainer.style.borderColor = "#33ff66";
                 
                 pScoreDisplay.style.color = "#33ff66";
                 pScoreDisplay.style.textShadow = "0 0 20px #33ff66";
-                pScoreDisplay.style.bottom = "auto"; pScoreDisplay.style.top = "100px"; pScoreDisplay.style.left = "25px";
+                pScoreDisplay.style.bottom = "auto"; pScoreDisplay.style.top = "70px"; pScoreDisplay.style.left = "25px";
                 
                 cScoreDisplay.style.color = "#ff3344";
                 cScoreDisplay.style.textShadow = "0 0 20px #ff3344";
-                cScoreDisplay.style.top = "auto"; cScoreDisplay.style.bottom = "100px"; cScoreDisplay.style.right = "25px";
+                cScoreDisplay.style.top = "auto"; cScoreDisplay.style.bottom = "70px"; cScoreDisplay.style.right = "25px";
             }
 
             if (window.myRole === 1) {
@@ -414,14 +460,22 @@
             requestAnimationFrame(updateGame);
         };
 
-        function handleMove(clientX) {
+        // منطق شريط التحكم الجديد (Slider) للتحكم بالمضرب بسلاسة تامة
+        function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
-            boxRect = gameBox.getBoundingClientRect(); 
-            let relativeX = clientX - boxRect.left;
-            let currentX = relativeX - (paddleWidth / 2);
+            boxRect = gameBox.getBoundingClientRect();
+            const sliderRect = sliderContainer.getBoundingClientRect();
             
-            currentX = Math.max(0, Math.min(boxRect.width - paddleWidth, currentX));
+            // حساب النسبة المئوية لحركة الإصبع داخل شريط التحكم
+            let relativeX = clientX - sliderRect.left;
+            let percentage = relativeX / sliderRect.width;
+            percentage = Math.max(0, Math.min(1, percentage));
 
+            // تحريك مقبض الشريط مرئياً
+            sliderKnob.style.left = `calc(${percentage * 100}% - 22.5px)`;
+
+            // تحريك المضرب الفعلي بناءً على نسبة حركة الشريط
+            let currentX = percentage * (boxRect.width - paddleWidth);
             myPaddleX = currentX;
             playerPaddle.style.left = myPaddleX + 'px';
 
@@ -435,14 +489,19 @@
             window.fbUpdate(window.gameRef, dataToSend);
         }
 
-        gameBox.addEventListener('touchstart', (e) => { handleMove(e.touches[0].clientX); }, { passive: true });
-        gameBox.addEventListener('touchmove', (e) => { handleMove(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
-        gameBox.addEventListener('mousemove', (e) => { handleMove(e.clientX); });
+        // ربط أحداث اللمس بشريط التحكم السفلي فقط منعا للتداخل والـ Bugs
+        sliderContainer.addEventListener('touchstart', (e) => { handleSliderMove(e.touches[0].clientX); }, { passive: true });
+        sliderContainer.addEventListener('touchmove', (e) => { handleSliderMove(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+        sliderContainer.addEventListener('mousedown', (e) => {
+            function onMouseMove(event) { handleSliderMove(event.clientX); }
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', () => { window.removeEventListener('mousemove', onMouseMove); }, { once: true });
+        });
 
         function resetBall(direction) {
             ballX = (boxRect.width / 2) - (ballSize / 2);
             ballY = (boxRect.height / 2) - (ballSize / 2);
-            ballSpeedX = (Math.random() - 0.5) * 6;
+            ballSpeedX = (Math.random() - 0.5) * 5;
             ballSpeedY = direction * initialSpeedY;
         }
 
@@ -461,10 +520,10 @@
                     playSound('hit');
                 }
 
-                // اصطدام المضرب العلوي (اللاعب 2 من وجهة نظر اللاعب 1)
-                if (ballY <= 20 + paddleHeight && ballY >= 20) {
+                // اصطدام المضرب العلوي (اللاعب 2) - معدل للمسافة الآمنة 25px
+                if (ballY <= 25 + paddleHeight && ballY >= 25) {
                     if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
-                        ballY = 20 + paddleHeight;
+                        ballY = 25 + paddleHeight;
                         ballSpeedY = -ballSpeedY;
                         let hitPoint = (ballX + ballSize/2) - (currentCpuX + paddleWidth/2);
                         ballSpeedX = hitPoint * 0.22;
@@ -473,10 +532,10 @@
                     }
                 }
 
-                // اصطدام المضرب السفلي (اللاعب 1)
-                if (ballY >= boxRect.height - 20 - paddleHeight - ballSize && ballY <= boxRect.height - 20) {
+                // اصطدام المضرب السفلي (اللاعب 1) - معدل للمسافة الآمنة 25px
+                if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
                     if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
-                        ballY = boxRect.height - 20 - paddleHeight - ballSize;
+                        ballY = boxRect.height - 25 - paddleHeight - ballSize;
                         ballSpeedY = -ballSpeedY;
                         let hitPoint = (ballX + ballSize/2) - (myPaddleX + paddleWidth/2);
                         ballSpeedX = hitPoint * 0.22;
@@ -508,4 +567,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
