@@ -1,570 +1,511 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
-
-<title>Cyber Pong</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    user-select:none;
-    -webkit-user-select:none;
-}
-
-body{
-
-    background:#05060b;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    min-height:100vh;
-
-    overflow:hidden;
-
-    font-family:'Segoe UI',sans-serif;
-
-    padding:14px;
-}
-
-/* الطاولة */
-
-.game-container{
-
-    width:95vw;
-    max-width:430px;
-
-    height:92vh;
-    max-height:920px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    border-radius:32px;
-
-    background:
-    linear-gradient(
-    180deg,
-    #11182c 0%,
-    #070b15 100%
-    );
-
-    border:3px solid rgba(0,210,255,.85);
-
-    box-shadow:
-    0 0 45px rgba(0,210,255,.22),
-    inset 0 0 50px rgba(0,210,255,.08);
-
-    padding-bottom:20px;
-}
-
-/* الشبكة */
-
-.net{
-
-    position:absolute;
-
-    top:50%;
-    left:0;
-
-    width:100%;
-    height:2px;
-
-    transform:translateY(-50%);
-
-    background:
-    linear-gradient(
-    to right,
-    transparent 30%,
-    rgba(0,210,255,.35) 30%
-    );
-
-    background-size:18px 10px;
-}
-
-/* المضارب */
-
-.paddle{
-
-    position:absolute;
-
-    width:125px;
-    height:22px;
-
-    border-radius:60px;
-
-    left:0;
-
-    z-index:3;
-
-    border:2px solid rgba(255,255,255,.7);
-
-    backdrop-filter:blur(6px);
-
-    transition:
-    transform .05s linear,
-    box-shadow .15s ease;
-}
-
-.paddle:active{
-
-    transform:scale(1.04);
-}
-
-/* المضرب العلوي */
-
-#cpuPaddle{
-
-    top:25px;
-
-    background:#ff3344;
-
-    box-shadow:
-    0 0 28px #ff3344,
-    0 0 60px rgba(255,51,68,.35);
-}
-
-/* المضرب السفلي */
-
-#playerPaddle{
-
-    bottom:55px;
-
-    background:#33ff66;
-
-    box-shadow:
-    0 0 28px #33ff66,
-    0 0 60px rgba(51,255,102,.35);
-}
-
-/* الكرة */
-
-#ball{
-
-    position:absolute;
-
-    width:22px;
-    height:22px;
-
-    border-radius:50%;
-
-    background:#fff200;
-
-    box-shadow:
-    0 0 35px #fff200,
-    0 0 15px #ffffff,
-    0 0 60px rgba(255,242,0,.7);
-
-    left:calc(50% - 11px);
-    top:calc(50% - 11px);
-
-    display:none;
-
-    z-index:4;
-}
-
-/* السكور */
-
-.score-display{
-
-    position:absolute;
-
-    font-size:7rem;
-
-    font-weight:900;
-
-    opacity:.10;
-
-    z-index:1;
-
-    pointer-events:none;
-}
-
-#pScore{
-
-    bottom:160px;
-    right:28px;
-
-    color:#33ff66;
-
-    text-shadow:0 0 22px #33ff66;
-}
-
-#cScore{
-
-    top:140px;
-    left:28px;
-
-    color:#ff3344;
-
-    text-shadow:0 0 22px #ff3344;
-}
-
-/* شاشة البداية */
-
-.overlay{
-
-    position:absolute;
-
-    inset:0;
-
-    background:rgba(5,6,11,.96);
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-    align-items:center;
-
-    z-index:10;
-
-    padding:24px;
-}
-
-.status-msg{
-
-    color:#9aa6c2;
-
-    text-align:center;
-
-    margin-bottom:28px;
-
-    line-height:1.8;
-
-    font-size:1rem;
-}
-
-.overlay input{
-
-    width:120px;
-
-    padding:14px;
-
-    border:none;
-    outline:none;
-
-    border-radius:14px;
-
-    background:#11172a;
-
-    color:#fff;
-
-    font-size:1.5rem;
-
-    text-align:center;
-
-    font-weight:bold;
-
-    border:2px solid #00d2ff;
-
-    margin-bottom:24px;
-}
-
-.btn-group{
-
-    width:100%;
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:14px;
-
-    align-items:center;
-}
-
-.overlay button{
-
-    width:100%;
-
-    max-width:240px;
-
-    padding:15px;
-
-    border:none;
-
-    border-radius:40px;
-
-    color:#fff;
-
-    font-size:1.05rem;
-
-    font-weight:bold;
-
-    cursor:pointer;
-}
-
-#joinBtn{
-
-    background:
-    linear-gradient(
-    135deg,
-    #00d2ff,
-    #0066ff
-    );
-
-    box-shadow:
-    0 0 24px rgba(0,210,255,.4);
-}
-
-#startBtn{
-
-    background:
-    linear-gradient(
-    135deg,
-    #ff3344,
-    #ff6600
-    );
-
-    box-shadow:
-    0 0 24px rgba(255,51,68,.4);
-}
-
-/* اهتزاز */
-
-.shake{
-
-    animation:shake .15s ease-in-out;
-}
-
-@keyframes shake{
-
-    0%{
-        transform:translate(0,0);
-    }
-
-    25%{
-        transform:translate(-3px,3px);
-    }
-
-    50%{
-        transform:translate(3px,-3px);
-    }
-
-    100%{
-        transform:translate(0,0);
-    }
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cyber Pong</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: #06070d;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none; 
+            padding: 5px;
+        }
+
+        /* طاولة طويلة واحترافية جداً للموبايل */
+        .game-container {
+            width: 95vw;
+            max-width: 390px;
+            height: 92vh; /* زيادة الطول ليعطي مساحة لعب طويلة وحماسية */
+            max-height: 850px;
+            background: radial-gradient(circle, #111322 0%, #06070d 100%);
+            border: 3px solid #00d2ff;
+            border-radius: 20px;
+            box-shadow: 0 0 35px rgba(0, 210, 255, 0.25);
+            position: relative;
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        .net {
+            position: absolute;
+            top: 50%; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.3) 30%);
+            background-size: 15px 10px;
+            transform: translateY(-50%);
+        }
+
+        .paddle {
+            position: absolute;
+            width: 95px;
+            height: 16px; 
+            border-radius: 30px;
+            left: calc(50% - 47.5px);
+            transition: none; 
+            cursor: pointer;
+        }
+
+        /* الوضع الافتراضي للاعب 1 (الأحمر تحت والأخضر فوق) */
+        #cpuPaddle {
+            top: 20px;
+            background: #33ff66;
+            box-shadow: 0 0 20px #33ff66;
+        }
+
+        #playerPaddle {
+            bottom: 20px;
+            background: #ff3344;
+            box-shadow: 0 0 20px #ff3344;
+        }
+
+        #ball {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fffb00;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #fffb00, 0 0 5px #fff;
+            left: calc(50% - 8px);
+            top: calc(50% - 8px);
+            will-change: top, left;
+            display: none; 
+        }
+
+        /* أرقام السكور النيون مجردة تماماً في الخلفية */
+        .score-display {
+            position: absolute;
+            font-size: 6rem;
+            font-weight: 900;
+            opacity: 0.12;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #pScore {
+            bottom: 100px;
+            right: 25px;
+            color: #ff3344;
+            text-shadow: 0 0 20px #ff3344;
+        }
+
+        #cScore {
+            top: 100px;
+            left: 25px;
+            color: #33ff66;
+            text-shadow: 0 0 20px #33ff66;
+        }
+
+        /* شاشة الدخول المودرن النظيفة */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 7, 13, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 25px;
+        }
+
+        .overlay h2 {
+            color: #00d2ff;
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+        }
+
+        .overlay input {
+            padding: 12px;
+            font-size: 1.5rem;
+            width: 110px;
+            text-align: center;
+            border: 2px solid #00d2ff;
+            background: #111322;
+            color: #fff;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .status-msg {
+            font-size: 1rem;
+            color: #8892b0;
+            margin-bottom: 25px;
+            text-align: center;
+            max-width: 280px;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .overlay button {
+            background: linear-gradient(135deg, #00d2ff, #0066ff);
+            border: none;
+            color: white;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            width: 100%;
+            max-width: 220px;
+        }
+
+        #startBtn {
+            background: linear-gradient(135deg, #ff3344, #ff6600);
+            box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
+        }
+
+        .shake {
+            animation: hitShake 0.15s ease-in-out;
+        }
+
+        @keyframes hitShake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-3px, 3px); }
+            50% { transform: translate(3px, -3px); }
+            100% { transform: translate(0, 0); }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="game-container" id="gameBox">
+    <div class="game-container" id="gameBox">
+        <div id="cScore" class="score-display">0</div>
+        <div id="pScore" class="score-display">0</div>
+        
+        <div class="net"></div>
+        <div id="cpuPaddle" class="paddle"></div>
+        <div id="playerPaddle" class="paddle"></div>
+        <div id="ball"></div>
 
-    <div id="cScore" class="score-display">0</div>
-
-    <div id="pScore" class="score-display">0</div>
-
-    <div class="net"></div>
-
-    <div id="cpuPaddle" class="paddle"></div>
-
-    <div id="playerPaddle" class="paddle"></div>
-
-    <div id="ball"></div>
-
-    <div id="startOverlay" class="overlay">
-
-        <div class="status-msg"
-        id="statusMessage">
-
-            جاري الاتصال بالساحة...
-
+        <div id="startOverlay" class="overlay">
+            <h2>CYBER PONG</h2>
+            <div class="status-msg" id="statusMessage">جاري المزامنة...</div>
+            
+            <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="الدور">
+            
+            <div class="btn-group">
+                <button id="joinBtn" onclick="window.joinGame()">دخول الساحة 🚀</button>
+                <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">انطلاق المواجهة 🔥</button>
+            </div>
         </div>
-
-        <input
-        type="number"
-        id="playerRoleInput"
-        min="1"
-        max="2"
-        placeholder="1 / 2">
-
-        <div class="btn-group">
-
-            <button id="joinBtn"
-            onclick="window.joinGame()">
-
-                دخول الساحة 🚀
-
-            </button>
-
-            <button id="startBtn"
-            onclick="window.requestStartGame()"
-            style="display:none;">
-
-                بدء المواجهة 🔥
-
-            </button>
-
-        </div>
-
     </div>
 
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-<script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5-fI6x_c5O5eyx5aqLpDRa15xSKDzrr4",
+            authDomain: "moor-ff93d.firebaseapp.com",
+            projectId: "moor-ff93d",
+            storageBucket: "moor-ff93d.firebasestorage.app",
+            messagingSenderId: "482827206696",
+            appId: "1:482827206696:web:20651d267da19c0234f51d",
+            measurementId: "G-781HE6SX64"
+        };
 
-const gameBox =
-document.getElementById('gameBox');
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const gameRef = ref(db, "gameRoom");
 
-const playerPaddle =
-document.getElementById('playerPaddle');
+        window.fbUpdate = update;
+        window.fbSet = set;
+        window.gameRef = gameRef;
 
-const cpuPaddle =
-document.getElementById('cpuPaddle');
+        onValue(gameRef, (snapshot) => {
+            const data = snapshot.val();
+            window.onlineData = data; 
 
-const ball =
-document.getElementById('ball');
+            const statusMessage = document.getElementById("statusMessage");
+            const roleInput = document.getElementById("playerRoleInput");
+            const joinBtn = document.getElementById("joinBtn");
+            const startBtn = document.getElementById("startBtn");
 
-let boxRect =
-gameBox.getBoundingClientRect();
+            if (!window.hasJoined) {
+                if (!data || (!data.p1_online && !data.p2_online)) {
+                    statusMessage.innerText = "أدخل رقم 1 لتلعب باللون الأحمر من الأسفل.";
+                } else if (data.p1_online && !data.p2_online) {
+                    statusMessage.innerHTML = "الخصم جاهز بالأحمر!<br>أدخل رقم 2 لتلعب بالأخضر من الأسفل.";
+                } else if (data.p1_online && data.p2_online) {
+                    statusMessage.innerText = "الساحة ممتلئة حالياً باللاعبين.";
+                }
+            } else {
+                if (data && data.p1_online && data.p2_online) {
+                    statusMessage.innerHTML = "⚡ اكتمل الاتصال اللحظي! ⚡<br>اضغط زر الانطلاق لبدء اللعب.";
+                    roleInput.style.display = "none";
+                    joinBtn.style.display = "none";
+                    startBtn.style.display = "block";
+                }
 
-let paddleWidth = 125;
+                if (data) {
+                    if (data.pScore !== undefined) document.getElementById('pScore').innerText = data.pScore;
+                    if (data.cScore !== undefined) document.getElementById('cScore').innerText = data.cScore;
 
-let myPaddleX =
-(boxRect.width / 2) - (paddleWidth / 2);
+                    // معالجة عكس إحداثيات الكرة والمضارب ذكياً للاعب 2 ليرى الأخضر بالأسفل دائماً
+                    if (window.myRole === 1) {
+                        if (data.cpuX !== undefined) window.updateTopPaddleX(data.cpuX);
+                        if (data.ballX !== undefined && data.ballY !== undefined) window.updateBallPosition(data.ballX, data.ballY);
+                    } else if (window.myRole === 2) {
+                        if (data.playerX !== undefined) window.updateTopPaddleX(data.playerX);
+                        if (data.ballX !== undefined && data.ballY !== undefined) {
+                            let invertedX = boxRect.width - ballSize - data.ballX;
+                            let invertedY = boxRect.height - ballSize - data.ballY;
+                            window.updateBallPosition(invertedX, invertedY);
+                        }
+                    }
 
-/* حركة ناعمة */
+                    if (data.gameStarted === true && !window.gameRunning) {
+                        window.triggerActualStart();
+                    }
+                }
+            }
+        });
+    </script>
 
-function handleMove(clientX){
+    <script>
+        const gameBox = document.getElementById('gameBox');
+        const playerPaddle = document.getElementById('playerPaddle');
+        const cpuPaddle = document.getElementById('cpuPaddle');
+        const ball = document.getElementById('ball');
+        const pScoreDisplay = document.getElementById('pScore');
+        const cScoreDisplay = document.getElementById('cScore');
+        const startOverlay = document.getElementById('startOverlay');
 
-    boxRect =
-    gameBox.getBoundingClientRect();
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if (type === 'hit') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(320, now);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now); osc.stop(now + 0.08);
+            } else if (type === 'score') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(580, now);
+                osc.frequency.exponentialRampToValueAtTime(1400, now + 0.35);
+                gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now); osc.stop(now + 0.35);
+            }
+        }
 
-    let relativeX =
-    clientX - boxRect.left;
+        function triggerScreenShake() {
+            gameBox.classList.add('shake');
+            setTimeout(() => gameBox.classList.remove('shake'), 150);
+        }
 
-    let currentX =
-    relativeX - (paddleWidth / 2);
+        window.myRole = 0;
+        window.hasJoined = false;
+        window.gameRunning = false;
 
-    currentX = Math.max(
-    0,
-    Math.min(
-    boxRect.width - paddleWidth,
-    currentX
-    )
-    );
+        let boxRect = gameBox.getBoundingClientRect();
+        let paddleWidth = 95;
+        let paddleHeight = 16;
+        let ballSize = 16;
 
-    myPaddleX = currentX;
+        let myPaddleX = (boxRect.width / 2) - (paddleWidth / 2);
+        let ballX = (boxRect.width / 2) - (ballSize / 2);
+        let ballY = (boxRect.height / 2) - (ballSize / 2);
 
-    playerPaddle.style.transform =
-    `translateX(${myPaddleX}px)`;
-}
+        let ballSpeedX = 0;
+        let ballSpeedY = 0;
+        const initialSpeedY = 7.5; 
 
-/* لمس */
+        window.addEventListener('resize', () => {
+            boxRect = gameBox.getBoundingClientRect();
+        });
 
-gameBox.addEventListener(
+        // تحديث المضرب العلوي للخصم
+        window.updateTopPaddleX = function(x) { 
+            if (window.myRole === 2) {
+                let invertedX = boxRect.width - paddleWidth - x;
+                cpuPaddle.style.left = invertedX + 'px';
+            } else {
+                cpuPaddle.style.left = x + 'px';
+            }
+        };
 
-'touchstart',
+        window.updateBallPosition = function(x, y) {
+            ballX = x; ballY = y;
+            ball.style.left = ballX + 'px';
+            ball.style.top = ballY + 'px';
+        };
 
-(e)=>{
+        window.joinGame = function() {
+            const roleInput = document.getElementById("playerRoleInput").value;
+            if (roleInput !== "1" && roleInput !== "2") {
+                alert("اكتب 1 أو 2 فقط لتحديد دورك!");
+                return;
+            }
+            window.myRole = parseInt(roleInput);
+            window.hasJoined = true;
 
-    handleMove(
-    e.touches[0].clientX
-    );
+            // إذا كان اللاعب هو "اللاعب 2"، نقوم بقلب العناصر بملعبه ليصبح مضربه الأخضر بالأسفل والأحمر بالأعلى
+            if (window.myRole === 2) {
+                playerPaddle.style.background = "#33ff66";
+                playerPaddle.style.boxShadow = "0 0 20px #33ff66";
+                cpuPaddle.style.background = "#ff3344";
+                cpuPaddle.style.boxShadow = "0 0 20px #ff3344";
+                
+                pScoreDisplay.style.color = "#33ff66";
+                pScoreDisplay.style.textShadow = "0 0 20px #33ff66";
+                pScoreDisplay.style.bottom = "auto"; pScoreDisplay.style.top = "100px"; pScoreDisplay.style.left = "25px";
+                
+                cScoreDisplay.style.color = "#ff3344";
+                cScoreDisplay.style.textShadow = "0 0 20px #ff3344";
+                cScoreDisplay.style.top = "auto"; cScoreDisplay.style.bottom = "100px"; cScoreDisplay.style.right = "25px";
+            }
 
-},
+            if (window.myRole === 1) {
+                window.fbSet(window.gameRef, {
+                    p1_online: true,
+                    p2_online: false,
+                    pScore: 0,
+                    cScore: 0,
+                    gameStarted: false,
+                    playerX: myPaddleX,
+                    cpuX: myPaddleX
+                });
+            } else if (window.myRole === 2) {
+                window.fbUpdate(window.gameRef, { "p2_online": true });
+            }
+        };
 
-{passive:true}
+        window.requestStartGame = function() {
+            const data = window.onlineData;
+            if (!data || !data.p1_online || !data.p2_online) return;
+            window.fbUpdate(window.gameRef, { "gameStarted": true });
+        };
 
-);
+        window.triggerActualStart = function() {
+            playSound('hit');
+            startOverlay.style.display = 'none';
+            ball.style.display = 'block';
+            window.gameRunning = true;
 
-gameBox.addEventListener(
+            if (window.myRole === 1) {
+                resetBall(1);
+            }
+            requestAnimationFrame(updateGame);
+        };
 
-'touchmove',
+        function handleMove(clientX) {
+            if (!window.gameRunning) return;
+            boxRect = gameBox.getBoundingClientRect(); 
+            let relativeX = clientX - boxRect.left;
+            let currentX = relativeX - (paddleWidth / 2);
+            
+            currentX = Math.max(0, Math.min(boxRect.width - paddleWidth, currentX));
 
-(e)=>{
+            myPaddleX = currentX;
+            playerPaddle.style.left = myPaddleX + 'px';
 
-    handleMove(
-    e.touches[0].clientX
-    );
+            let dataToSend = {};
+            if (window.myRole === 1) {
+                dataToSend["playerX"] = myPaddleX;
+            } else if (window.myRole === 2) {
+                let originalX = boxRect.width - paddleWidth - myPaddleX;
+                dataToSend["cpuX"] = originalX;
+            }
+            window.fbUpdate(window.gameRef, dataToSend);
+        }
 
-    e.preventDefault();
+        gameBox.addEventListener('touchstart', (e) => { handleMove(e.touches[0].clientX); }, { passive: true });
+        gameBox.addEventListener('touchmove', (e) => { handleMove(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+        gameBox.addEventListener('mousemove', (e) => { handleMove(e.clientX); });
 
-},
+        function resetBall(direction) {
+            ballX = (boxRect.width / 2) - (ballSize / 2);
+            ballY = (boxRect.height / 2) - (ballSize / 2);
+            ballSpeedX = (Math.random() - 0.5) * 6;
+            ballSpeedY = direction * initialSpeedY;
+        }
 
-{passive:false}
+        function updateGame() {
+            if (!window.gameRunning) return;
 
-);
+            if (window.myRole === 1) {
+                let data = window.onlineData;
+                let currentCpuX = (data && data.cpuX !== undefined) ? data.cpuX : (boxRect.width / 2 - paddleWidth / 2);
+                
+                ballX += ballSpeedX;
+                ballY += ballSpeedY;
 
-/* ماوس */
+                if (ballX <= 0 || ballX >= boxRect.width - ballSize) {
+                    ballSpeedX = -ballSpeedX;
+                    playSound('hit');
+                }
 
-gameBox.addEventListener(
+                // اصطدام المضرب العلوي (اللاعب 2 من وجهة نظر اللاعب 1)
+                if (ballY <= 20 + paddleHeight && ballY >= 20) {
+                    if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
+                        ballY = 20 + paddleHeight;
+                        ballSpeedY = -ballSpeedY;
+                        let hitPoint = (ballX + ballSize/2) - (currentCpuX + paddleWidth/2);
+                        ballSpeedX = hitPoint * 0.22;
+                        playSound('hit');
+                        triggerScreenShake();
+                    }
+                }
 
-'mousemove',
+                // اصطدام المضرب السفلي (اللاعب 1)
+                if (ballY >= boxRect.height - 20 - paddleHeight - ballSize && ballY <= boxRect.height - 20) {
+                    if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
+                        ballY = boxRect.height - 20 - paddleHeight - ballSize;
+                        ballSpeedY = -ballSpeedY;
+                        let hitPoint = (ballX + ballSize/2) - (myPaddleX + paddleWidth/2);
+                        ballSpeedX = hitPoint * 0.22;
+                        playSound('hit');
+                        triggerScreenShake();
+                    }
+                }
 
-(e)=>{
+                if (ballY < 0) {
+                    let pScore = parseInt(document.getElementById('pScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { "pScore": pScore });
+                    playSound('score');
+                    triggerScreenShake();
+                    resetBall(-1);
+                } else if (ballY > boxRect.height) {
+                    let cScore = parseInt(document.getElementById('cScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { "cScore": cScore });
+                    playSound('score');
+                    triggerScreenShake();
+                    resetBall(1);
+                }
 
-    handleMove(
-    e.clientX
-    );
+                window.fbUpdate(window.gameRef, { "ballX": ballX, "ballY": ballY });
+                ball.style.left = ballX + 'px';
+                ball.style.top = ballY + 'px';
+            }
 
-}
-
-);
-
-/* حركة بسيطة للكرة */
-
-let ballX =
-(boxRect.width / 2);
-
-let ballY =
-(boxRect.height / 2);
-
-let speedX = 5;
-
-let speedY = 6;
-
-function animateBall(){
-
-    ball.style.display='block';
-
-    ballX += speedX;
-
-    ballY += speedY;
-
-    if(ballX <= 0 ||
-    ballX >= boxRect.width - 22){
-
-        speedX = -speedX;
-    }
-
-    if(ballY <= 0 ||
-    ballY >= boxRect.height - 22){
-
-        speedY = -speedY;
-    }
-
-    ball.style.left =
-    ballX + 'px';
-
-    ball.style.top =
-    ballY + 'px';
-
-    requestAnimationFrame(
-    animateBall
-    );
-}
-
-animateBall();
-
-</script>
-
+            requestAnimationFrame(updateGame);
+        }
+    </script>
 </body>
-</html>
+</html> 
