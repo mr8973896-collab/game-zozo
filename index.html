@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Cyber Pong</title>
     <style>
         * {
@@ -13,77 +13,98 @@
             -webkit-user-select: none;
         }
 
-        body {
+        /* حماية الشاشة الكاملة والتوافق الذكي مع سامسونج وهواوي */
+        html, body {
+            width: 100%;
+            height: 100%;
             background: #06070d;
+            overflow: hidden;
+        }
+
+        body {
             color: #fff;
             font-family: 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+            justify-content: space-between; /* توزيع ذكي يمنع النزول تحت الأزرار */
+            padding: calc(10px + env(safe-area-inset-top)) 10px calc(15px + env(safe-area-inset-bottom)) 10px;
             touch-action: none; 
-            padding: 10px;
         }
 
-        /* ضبط حجم طاولة اللعب بشكل متناسق ومضمون يظهر بالكامل */
+        /* طاولة مرنة تتكيف ذكياً مع أي متصفح وشاشة */
         .game-container {
-            width: 95vw;
+            width: 100%;
             max-width: 360px;
-            height: 68vh; /* تقصير الارتفاع لترك مساحة آمنة بالأسفل */
-            max-height: 550px;
+            flex: 1; /* تأخذ كل المساحة المتاحة بأمان فوق شريط التحكم */
+            margin-bottom: 10px;
             background: radial-gradient(circle, #111322 0%, #06070d 100%);
             border: 3px solid #00d2ff;
             border-radius: 20px;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.2);
             position: relative;
             overflow: hidden;
-            touch-action: none; 
+            touch-action: none;
+            transition: border-color 0.1s, box-shadow 0.1s;
         }
 
-        /* شريط التحكم الجديد بالأسفل للتحريك يميناً ويساراً */
+        /* أنيميشن فلاش الأطراف النيون عند تسجيل الجون */
+        @keyframes scoreFlash {
+            0% { border-color: #fffb00; box-shadow: 0 0 40px #fffb00, inset 0 0 30px #fffb00; }
+            25% { border-color: #ff3344; box-shadow: 0 0 50px #ff3344, inset 0 0 40px #ff3344; }
+            50% { border-color: #b026ff; box-shadow: 0 0 50px #b026ff, inset 0 0 40px #b026ff; }
+            75% { border-color: #00d2ff; box-shadow: 0 0 50px #00d2ff, inset 0 0 40px #00d2ff; }
+            100% { border-color: #00d2ff; box-shadow: 0 0 25px rgba(0, 210, 255, 0.2), inset 0 0 0px transparent; }
+        }
+
+        .score-celebration {
+            animation: scoreFlash 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* شريط التحكم السفلي المضيء والمشع */
         .control-slider-container {
-            width: 95vw;
+            width: 100%;
             max-width: 360px;
-            margin-top: 15px;
             background: #111322;
             border: 2px solid #00d2ff;
             border-radius: 15px;
-            height: 60px;
+            height: 55px;
+            min-height: 55px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: none;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .control-track {
-            width: 85%;
+            width: 88%;
             height: 6px;
-            background: rgba(0, 210, 255, 0.2);
+            background: rgba(0, 210, 255, 0.15);
             border-radius: 3px;
             position: relative;
         }
 
         .control-knob {
-            width: 45px;
-            height: 25px;
+            width: 50px;
+            height: 28px;
             background: #00d2ff;
             border-radius: 20px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px #00d2ff;
+            box-shadow: 0 0 25px #00d2ff, 0 0 5px #fff;
             cursor: pointer;
+            transition: background 0.3s, box-shadow 0.3s;
         }
 
         .net {
             position: absolute;
             top: 50%; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.2) 30%);
+            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.15) 30%);
             background-size: 15px 10px;
             transform: translateY(-50%);
         }
@@ -97,7 +118,6 @@
             transition: none; 
         }
 
-        /* الوضع الافتراضي للاعب 1 (الأحمر تحت والأخضر فوق) */
         #cpuPaddle {
             top: 25px;
             background: #33ff66;
@@ -105,25 +125,25 @@
         }
 
         #playerPaddle {
-            bottom: 25px; /* مسافة آمنة من الأسفل لضمان الرؤية الكاملة */
+            bottom: 25px; 
             background: #ff3344;
             box-shadow: 0 0 20px #ff3344;
         }
 
+        /* تكبير الكرة وزيادة توهجها النيون */
         #ball {
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 20px; /* تكبير الكرة */
+            height: 20px;
             background: #fffb00;
             border-radius: 50%;
-            box-shadow: 0 0 20px #fffb00, 0 0 5px #fff;
-            left: calc(50% - 8px);
-            top: calc(50% - 8px);
+            box-shadow: 0 0 25px #fffb00, 0 0 10px #fff;
+            left: calc(50% - 10px);
+            top: calc(50% - 10px);
             will-change: top, left;
             display: none; 
         }
 
-        /* أرقام السكور النيون مجردة تماماً في الخلفية */
         .score-display {
             position: absolute;
             font-size: 5rem;
@@ -134,20 +154,15 @@
         }
 
         #pScore {
-            bottom: 70px;
-            right: 25px;
-            color: #ff3344;
-            text-shadow: 0 0 20px #ff3344;
+            bottom: 70px; right: 25px;
+            color: #ff3344; text-shadow: 0 0 20px #ff3344;
         }
 
         #cScore {
-            top: 70px;
-            left: 25px;
-            color: #33ff66;
-            text-shadow: 0 0 20px #33ff66;
+            top: 70px; left: 25px;
+            color: #33ff66; text-shadow: 0 0 20px #33ff66;
         }
 
-        /* شاشة الدخول المودرن النظيفة */
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -280,6 +295,9 @@
         window.fbSet = set;
         window.gameRef = gameRef;
 
+        let lastPScore = 0;
+        let lastCScore = 0;
+
         onValue(gameRef, (snapshot) => {
             const data = snapshot.val();
             window.onlineData = data; 
@@ -306,8 +324,17 @@
                 }
 
                 if (data) {
-                    if (data.pScore !== undefined) document.getElementById('pScore').innerText = data.pScore;
-                    if (data.cScore !== undefined) document.getElementById('cScore').innerText = data.cScore;
+                    // رصد تسجيل الأهداف لتشغيل فلاش الأطراف المبهر فوراً عند الطرفين
+                    if (data.pScore !== undefined && data.pScore !== lastPScore) {
+                        document.getElementById('pScore').innerText = data.pScore;
+                        lastPScore = data.pScore;
+                        window.triggerScoreCelebration();
+                    }
+                    if (data.cScore !== undefined && data.cScore !== lastCScore) {
+                        document.getElementById('cScore').innerText = data.cScore;
+                        lastCScore = data.cScore;
+                        window.triggerScoreCelebration();
+                    }
 
                     if (window.myRole === 1) {
                         if (data.cpuX !== undefined) window.updateTopPaddleX(data.cpuX);
@@ -364,6 +391,13 @@
             setTimeout(() => gameBox.classList.remove('shake'), 150);
         }
 
+        // تشغيل احتفال فلاش الأطراف النيون الرباعي عند الجون
+        window.triggerScoreCelebration = function() {
+            gameBox.classList.remove('score-celebration');
+            void gameBox.offsetWidth; // الخدعة السحرية لإعادة تشغيل الـ CSS Animation
+            gameBox.classList.add('score-celebration');
+        };
+
         window.myRole = 0;
         window.hasJoined = false;
         window.gameRunning = false;
@@ -371,7 +405,7 @@
         let boxRect = gameBox.getBoundingClientRect();
         let paddleWidth = 85;
         let paddleHeight = 16;
-        let ballSize = 16;
+        let ballSize = 20; // تكبير الكورة لـ 20px لتصبح واضحة جداً
 
         let myPaddleX = (boxRect.width / 2) - (paddleWidth / 2);
         let ballX = (boxRect.width / 2) - (ballSize / 2);
@@ -381,9 +415,12 @@
         let ballSpeedY = 0;
         const initialSpeedY = 6.5; 
 
-        window.addEventListener('resize', () => {
+        // إعادة حساب الأبعاد ذكياً عند تغيير حجم الشاشة أو تدويرها
+        function resizeGame() {
             boxRect = gameBox.getBoundingClientRect();
-        });
+        }
+        window.addEventListener('resize', resizeGame);
+        window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 200); });
 
         window.updateTopPaddleX = function(x) { 
             if (window.myRole === 2) {
@@ -408,15 +445,19 @@
             }
             window.myRole = parseInt(roleInput);
             window.hasJoined = true;
+            resizeGame();
 
+            // تخصيص الألوان وإشعاع الشريط التام للاعب 2 (الأخضر)
             if (window.myRole === 2) {
                 playerPaddle.style.background = "#33ff66";
                 playerPaddle.style.boxShadow = "0 0 20px #33ff66";
                 cpuPaddle.style.background = "#ff3344";
                 cpuPaddle.style.boxShadow = "0 0 20px #ff3344";
+                
                 sliderKnob.style.background = "#33ff66";
-                sliderKnob.style.boxShadow = "0 0 15px #33ff66";
+                sliderKnob.style.boxShadow = "0 0 25px #33ff66, 0 0 5px #fff";
                 sliderContainer.style.borderColor = "#33ff66";
+                sliderContainer.style.boxShadow = "0 0 20px rgba(51, 255, 102, 0.25)";
                 
                 pScoreDisplay.style.color = "#33ff66";
                 pScoreDisplay.style.textShadow = "0 0 20px #33ff66";
@@ -453,6 +494,7 @@
             startOverlay.style.display = 'none';
             ball.style.display = 'block';
             window.gameRunning = true;
+            resizeGame();
 
             if (window.myRole === 1) {
                 resetBall(1);
@@ -460,21 +502,18 @@
             requestAnimationFrame(updateGame);
         };
 
-        // منطق شريط التحكم الجديد (Slider) للتحكم بالمضرب بسلاسة تامة
+        // إدارة شريط السلايدر الذكي المتوافق 100% مع شاشات السامسونج اللمسية
         function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
             boxRect = gameBox.getBoundingClientRect();
             const sliderRect = sliderContainer.getBoundingClientRect();
             
-            // حساب النسبة المئوية لحركة الإصبع داخل شريط التحكم
             let relativeX = clientX - sliderRect.left;
             let percentage = relativeX / sliderRect.width;
             percentage = Math.max(0, Math.min(1, percentage));
 
-            // تحريك مقبض الشريط مرئياً
-            sliderKnob.style.left = `calc(${percentage * 100}% - 22.5px)`;
+            sliderKnob.style.left = `calc(${percentage * 100}% - 25px)`;
 
-            // تحريك المضرب الفعلي بناءً على نسبة حركة الشريط
             let currentX = percentage * (boxRect.width - paddleWidth);
             myPaddleX = currentX;
             playerPaddle.style.left = myPaddleX + 'px';
@@ -489,7 +528,6 @@
             window.fbUpdate(window.gameRef, dataToSend);
         }
 
-        // ربط أحداث اللمس بشريط التحكم السفلي فقط منعا للتداخل والـ Bugs
         sliderContainer.addEventListener('touchstart', (e) => { handleSliderMove(e.touches[0].clientX); }, { passive: true });
         sliderContainer.addEventListener('touchmove', (e) => { handleSliderMove(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
         sliderContainer.addEventListener('mousedown', (e) => {
@@ -499,6 +537,7 @@
         });
 
         function resetBall(direction) {
+            boxRect = gameBox.getBoundingClientRect();
             ballX = (boxRect.width / 2) - (ballSize / 2);
             ballY = (boxRect.height / 2) - (ballSize / 2);
             ballSpeedX = (Math.random() - 0.5) * 5;
@@ -520,7 +559,7 @@
                     playSound('hit');
                 }
 
-                // اصطدام المضرب العلوي (اللاعب 2) - معدل للمسافة الآمنة 25px
+                // اصطدام مضرب الخصم العلوي (25px من الحافة آمنة)
                 if (ballY <= 25 + paddleHeight && ballY >= 25) {
                     if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
                         ballY = 25 + paddleHeight;
@@ -532,7 +571,7 @@
                     }
                 }
 
-                // اصطدام المضرب السفلي (اللاعب 1) - معدل للمسافة الآمنة 25px
+                // اصطدام مضربك السفلي (25px من الحافة آمنة)
                 if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
                     if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
                         ballY = boxRect.height - 25 - paddleHeight - ballSize;
