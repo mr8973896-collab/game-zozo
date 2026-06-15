@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>سايلنت بونج - هدوء تام</title>
+    <title>سايلنت بونج - فيزياء سلسة</title>
     <style>
         * {
             box-sizing: border-box;
@@ -43,7 +43,6 @@
             position: relative;
             overflow: hidden;
             touch-action: none;
-            transition: none;
         }
 
         .control-slider-container {
@@ -96,17 +95,10 @@
             width: 85px;
             height: 16px; 
             border-radius: 30px;
-            transition: none; 
         }
 
-        /* المضرب العلوي (الخصم) بشكل عام */
-        .paddle-top {
-            top: 25px;
-        }
-        /* المضرب السفلي (اللاعب) بشكل عام */
-        .paddle-bottom {
-            bottom: 25px;
-        }
+        .paddle-top { top: 25px; }
+        .paddle-bottom { bottom: 25px; }
 
         #playerPaddle {
             box-shadow: 0 0 20px #ff3344;
@@ -124,10 +116,7 @@
             background: #fffb00;
             border-radius: 50%;
             box-shadow: 0 0 25px #fffb00, 0 0 10px #fff;
-            left: calc(50% - 10px);
-            top: calc(50% - 10px);
-            will-change: top, left;
-            display: none; 
+            display: none;
         }
 
         .score-display {
@@ -139,7 +128,6 @@
             pointer-events: none;
         }
 
-        /* مواقع افتراضية للاعب 1 */
         #pScore {
             bottom: 70px; right: 25px;
             color: #ff3344; text-shadow: 0 0 20px #ff3344;
@@ -216,8 +204,6 @@
             background: linear-gradient(135deg, #ff3344, #ff6600);
             box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
         }
-
-        /* تم إزالة كل تأثيرات الاهتزاز والحركة */
     </style>
 </head>
 <body>
@@ -225,7 +211,6 @@
     <div class="game-container" id="gameBox">
         <div id="cScore" class="score-display">0</div>
         <div id="pScore" class="score-display">0</div>
-        
         <div class="net"></div>
         <div id="cpuPaddle" class="paddle paddle-top"></div>
         <div id="playerPaddle" class="paddle paddle-bottom"></div>
@@ -234,9 +219,7 @@
         <div id="startOverlay" class="overlay">
             <h2>⚡ سايلنت بونج ⚡</h2>
             <div class="status-msg" id="statusMessage">انتظر الاتصال ...</div>
-            
             <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="رقم 1 أو 2">
-            
             <div class="btn-group">
                 <button id="joinBtn" onclick="window.joinGame()">🚀 دخول الساحة</button>
                 <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">🔥 بدء المواجهة</button>
@@ -272,27 +255,20 @@
         window.fbSet = set;
         window.gameRef = gameRef;
 
-        let lastPScore = 0;
-        let lastCScore = 0;
+        let lastPScore = 0, lastCScore = 0;
 
-        // مراقبة البيانات من Firebase
         onValue(gameRef, (snapshot) => {
             const data = snapshot.val();
-            window.onlineData = data; 
-
+            window.onlineData = data;
             const statusMessage = document.getElementById("statusMessage");
             const roleInput = document.getElementById("playerRoleInput");
             const joinBtn = document.getElementById("joinBtn");
             const startBtn = document.getElementById("startBtn");
 
             if (!window.hasJoined) {
-                if (!data || (!data.p1_online && !data.p2_online)) {
-                    statusMessage.innerText = "أدخل رقم 1 للتحكم بالأسفل (أحمر).";
-                } else if (data.p1_online && !data.p2_online) {
-                    statusMessage.innerHTML = "اللاعب الأول متصل (أحمر)<br>أدخل رقم 2 للعب بالأخضر.";
-                } else if (data.p1_online && data.p2_online) {
-                    statusMessage.innerText = "اللاعبان متصلان! اضغط 'بدء المواجهة'.";
-                }
+                if (!data || (!data.p1_online && !data.p2_online)) statusMessage.innerText = "أدخل رقم 1 للتحكم بالأسفل (أحمر).";
+                else if (data.p1_online && !data.p2_online) statusMessage.innerHTML = "اللاعب الأول متصل (أحمر)<br>أدخل رقم 2 للعب بالأخضر.";
+                else if (data.p1_online && data.p2_online) statusMessage.innerText = "اللاعبان متصلان! اضغط 'بدء المواجهة'.";
             } else {
                 if (data && data.p1_online && data.p2_online && !data.gameStarted) {
                     statusMessage.innerHTML = "✅ اكتمل الاتصال! اضغط زر الانطلاق.";
@@ -300,9 +276,7 @@
                     joinBtn.style.display = "none";
                     startBtn.style.display = "block";
                 }
-
                 if (data) {
-                    // تحديث الأرقام فقط
                     if (data.pScore !== undefined && data.pScore !== lastPScore) {
                         document.getElementById('pScore').innerText = data.pScore;
                         lastPScore = data.pScore;
@@ -311,37 +285,27 @@
                         document.getElementById('cScore').innerText = data.cScore;
                         lastCScore = data.cScore;
                     }
-
-                    // تحديث مواضع المضارب بناءً على الدور الحقيقي
                     if (window.myRole === 1) {
-                        // اللاعب 1: مضربه الخاص هو playerPaddle (أسفل)، مضرب الخصم هو cpuPaddle (أعلى)
                         if (data.playerX !== undefined) window.updateLocalPaddle(data.playerX, 'player');
                         if (data.cpuX !== undefined) window.updateLocalPaddle(data.cpuX, 'cpu');
                         if (data.ballX !== undefined && data.ballY !== undefined) window.updateBallPosition(data.ballX, data.ballY);
                     } else if (window.myRole === 2) {
-                        // اللاعب 2: مضربه الخاص هو playerPaddle (أسفل)، ولكن بالنسبة له، الخصم هو اللاعب 1
-                        // في بيانات الفايربيز، cpuX تمثل موقع اللاعب 2 الفعلي، و playerX موقع اللاعب 1 الفعلي.
-                        // نعكس المنطق: مضرب اللاعب 2 الخاص به = بيانات cpuX (لأنه هو الذي يتحكم به)، ومضرب الخصم = بيانات playerX
                         if (data.cpuX !== undefined) window.updateLocalPaddle(data.cpuX, 'player');
                         if (data.playerX !== undefined) window.updateLocalPaddle(data.playerX, 'cpu');
                         if (data.ballX !== undefined && data.ballY !== undefined && window.boxRectW) {
-                            // عكس إحداثيات الكرة للاعب 2
-                            let invertedX = window.boxRectW - 20 - data.ballX;
-                            let invertedY = window.boxRectH - 20 - data.ballY;
-                            window.updateBallPosition(invertedX, invertedY);
+                            let invX = window.boxRectW - 20 - data.ballX;
+                            let invY = window.boxRectH - 20 - data.ballY;
+                            window.updateBallPosition(invX, invY);
                         }
                     }
-
-                    if (data.gameStarted === true && !window.gameRunning) {
-                        window.triggerActualStart();
-                    }
+                    if (data.gameStarted === true && !window.gameRunning) window.triggerActualStart();
                 }
             }
         });
     </script>
 
     <script>
-        // ------------------- عناصر DOM -------------------
+        // ------------------- DOM Elements -------------------
         const gameBox = document.getElementById('gameBox');
         const playerPaddleElem = document.getElementById('playerPaddle');
         const cpuPaddleElem = document.getElementById('cpuPaddle');
@@ -357,137 +321,70 @@
         let boxRect = gameBox.getBoundingClientRect();
         window.boxRectW = boxRect.width;
         window.boxRectH = boxRect.height;
-        let paddleWidth = 85;
-        let paddleHeight = 16;
-        let ballSize = 20; 
+        const paddleWidth = 85;
+        const paddleHeight = 16;
+        const ballSize = 20;
+        const PADDLE_Y_TOP = 25;
+        const PADDLE_Y_BOTTOM = (boxRect.height - 25 - paddleHeight);
+        const BALL_RADIUS = 10; // نصف القطر للكشف الدقيق
 
         let myPaddleX = (boxRect.width / 2) - (paddleWidth / 2);
         let ballX = (boxRect.width / 2) - (ballSize / 2);
         let ballY = (boxRect.height / 2) - (ballSize / 2);
-
-        let ballSpeedX = 0;
-        let ballSpeedY = 0;
-        const initialSpeedY = 6.2; 
+        let ballSpeedX = 0, ballSpeedY = 0;
+        const initialSpeedY = 5.5;
 
         function resizeGame() {
             boxRect = gameBox.getBoundingClientRect();
             window.boxRectW = boxRect.width;
             window.boxRectH = boxRect.height;
             if (!window.gameRunning) return;
-            if (window.myRole === 1 && window.gameRunning) {
-                let maxX = boxRect.width - paddleWidth;
-                if (myPaddleX > maxX) myPaddleX = maxX;
-                if (myPaddleX < 0) myPaddleX = 0;
-                playerPaddleElem.style.left = myPaddleX + 'px';
-            } else if (window.myRole === 2 && window.gameRunning) {
-                // للاعب 2 نعيد ضبط موضع المضرب الخاص به بناءً على myPaddleX الحالي
-                let maxX = boxRect.width - paddleWidth;
-                if (myPaddleX > maxX) myPaddleX = maxX;
-                if (myPaddleX < 0) myPaddleX = 0;
-                playerPaddleElem.style.left = myPaddleX + 'px';
-            }
+            let maxX = boxRect.width - paddleWidth;
+            if (myPaddleX > maxX) myPaddleX = maxX;
+            if (myPaddleX < 0) myPaddleX = 0;
+            playerPaddleElem.style.left = myPaddleX + 'px';
         }
         window.addEventListener('resize', resizeGame);
-        window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 150); });
+        window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
 
-        // دالة لتحديث المضارب محلياً (بدون عكس منطق المعادلات هنا، كل شيء يتم عبر الـ role)
-        window.updateLocalPaddle = function(x, type) {
-            if (type === 'player') {
-                playerPaddleElem.style.left = x + 'px';
-            } else if (type === 'cpu') {
-                cpuPaddleElem.style.left = x + 'px';
-            }
+        window.updateLocalPaddle = (x, type) => {
+            if (type === 'player') playerPaddleElem.style.left = x + 'px';
+            else if (type === 'cpu') cpuPaddleElem.style.left = x + 'px';
         };
-
-        window.updateBallPosition = function(x, y) {
-            if (!ball) return;
-            ballX = x; ballY = y;
-            ball.style.left = ballX + 'px';
-            ball.style.top = ballY + 'px';
-        };
+        window.updateBallPosition = (x, y) => { ball.style.left = x + 'px'; ball.style.top = y + 'px'; };
 
         window.joinGame = function() {
             const roleInput = document.getElementById("playerRoleInput").value;
-            if (roleInput !== "1" && roleInput !== "2") {
-                alert("❌ يرجى كتابة 1 أو 2 فقط لتحديد دورك!");
-                return;
-            }
+            if (roleInput !== "1" && roleInput !== "2") { alert("❌ يرجى كتابة 1 أو 2 فقط!"); return; }
             window.myRole = parseInt(roleInput);
             window.hasJoined = true;
             resizeGame();
 
-            // تخصيص الألوان والواجهة حسب الدور
             if (window.myRole === 2) {
-                // اللاعب 2: مضربه الخاص أخضر، والخصم أحمر
-                playerPaddleElem.style.background = "#33ff66";
-                playerPaddleElem.style.boxShadow = "0 0 20px #33ff66";
-                cpuPaddleElem.style.background = "#ff3344";
-                cpuPaddleElem.style.boxShadow = "0 0 20px #ff3344";
-                
-                sliderKnob.style.background = "#33ff66";
-                sliderKnob.style.boxShadow = "0 0 25px #33ff66, 0 0 5px #fff";
+                playerPaddleElem.style.background = "#33ff66"; playerPaddleElem.style.boxShadow = "0 0 20px #33ff66";
+                cpuPaddleElem.style.background = "#ff3344"; cpuPaddleElem.style.boxShadow = "0 0 20px #ff3344";
+                sliderKnob.style.background = "#33ff66"; sliderKnob.style.boxShadow = "0 0 25px #33ff66, 0 0 5px #fff";
                 sliderContainer.style.borderColor = "#33ff66";
-                sliderContainer.style.boxShadow = "0 0 20px rgba(51, 255, 102, 0.25)";
-                
-                // تعديل مواقع النقاط للاعب 2
-                const pScoreDiv = document.getElementById('pScore');
-                const cScoreDiv = document.getElementById('cScore');
-                pScoreDiv.style.color = "#33ff66"; // نتيجته هو (اللاعب 2) باللون الأخضر
-                pScoreDiv.style.textShadow = "0 0 20px #33ff66";
-                pScoreDiv.style.bottom = "auto"; pScoreDiv.style.top = "70px"; pScoreDiv.style.left = "25px";
-                pScoreDiv.style.right = "auto";
-                
-                cScoreDiv.style.color = "#ff3344"; // نتيجة الخصم باللون الأحمر
-                cScoreDiv.style.textShadow = "0 0 20px #ff3344";
-                cScoreDiv.style.top = "auto"; cScoreDiv.style.bottom = "70px"; cScoreDiv.style.right = "25px";
-                cScoreDiv.style.left = "auto";
+                const p = document.getElementById('pScore'), c = document.getElementById('cScore');
+                p.style.color = "#33ff66"; p.style.textShadow = "0 0 20px #33ff66"; p.style.bottom = "auto"; p.style.top = "70px"; p.style.left = "25px"; p.style.right = "auto";
+                c.style.color = "#ff3344"; c.style.textShadow = "0 0 20px #ff3344"; c.style.top = "auto"; c.style.bottom = "70px"; c.style.right = "25px"; c.style.left = "auto";
             } else {
-                // اللاعب 1: مضربه الخاص أحمر، والخصم أخضر
-                playerPaddleElem.style.background = "#ff3344";
-                playerPaddleElem.style.boxShadow = "0 0 20px #ff3344";
-                cpuPaddleElem.style.background = "#33ff66";
-                cpuPaddleElem.style.boxShadow = "0 0 20px #33ff66";
-                sliderKnob.style.background = "#00d2ff";
-                sliderKnob.style.boxShadow = "0 0 25px #00d2ff, 0 0 5px #fff";
+                playerPaddleElem.style.background = "#ff3344"; playerPaddleElem.style.boxShadow = "0 0 20px #ff3344";
+                cpuPaddleElem.style.background = "#33ff66"; cpuPaddleElem.style.boxShadow = "0 0 20px #33ff66";
+                sliderKnob.style.background = "#00d2ff"; sliderKnob.style.boxShadow = "0 0 25px #00d2ff, 0 0 5px #fff";
                 sliderContainer.style.borderColor = "#00d2ff";
-                const pScoreDiv = document.getElementById('pScore');
-                const cScoreDiv = document.getElementById('cScore');
-                pScoreDiv.style.color = "#ff3344";
-                pScoreDiv.style.bottom = "70px"; pScoreDiv.style.right = "25px";
-                pScoreDiv.style.top = "auto"; pScoreDiv.style.left = "auto";
-                cScoreDiv.style.color = "#33ff66";
-                cScoreDiv.style.top = "70px"; cScoreDiv.style.left = "25px";
-                cScoreDiv.style.bottom = "auto";
+                const p = document.getElementById('pScore'), c = document.getElementById('cScore');
+                p.style.color = "#ff3344"; p.style.bottom = "70px"; p.style.right = "25px"; p.style.top = "auto"; p.style.left = "auto";
+                c.style.color = "#33ff66"; c.style.top = "70px"; c.style.left = "25px"; c.style.bottom = "auto";
             }
-
             if (window.myRole === 1) {
-                window.fbSet(window.gameRef, {
-                    p1_online: true,
-                    p2_online: false,
-                    pScore: 0,
-                    cScore: 0,
-                    gameStarted: false,
-                    playerX: myPaddleX,  // موقع المضرب السفلي للاعب 1
-                    cpuX: myPaddleX,     // موقع المضرب العلوي (اللاعب 2)
-                    ballX: (boxRect.width/2)-10,
-                    ballY: (boxRect.height/2)-10
-                });
-            } else if (window.myRole === 2) {
-                // عند انضمام اللاعب 2، يتم تحديث cpuX (الذي يمثل مضرب اللاعب 2 بالنسبة لقاعدة البيانات)
-                window.fbUpdate(window.gameRef, { 
-                    p2_online: true,
-                    cpuX: myPaddleX 
-                });
-            }
+                window.fbSet(window.gameRef, { p1_online: true, p2_online: false, pScore: 0, cScore: 0, gameStarted: false, playerX: myPaddleX, cpuX: myPaddleX, ballX: (boxRect.width/2)-10, ballY: (boxRect.height/2)-10 });
+            } else { window.fbUpdate(window.gameRef, { p2_online: true, cpuX: myPaddleX }); }
         };
 
         window.requestStartGame = function() {
-            const data = window.onlineData;
-            if (!data || !data.p1_online || !data.p2_online) {
-                alert("اللاعب الآخر ليس جاهزاً بعد!");
-                return;
-            }
-            window.fbUpdate(window.gameRef, { "gameStarted": true });
+            if (!window.onlineData?.p1_online || !window.onlineData?.p2_online) { alert("اللاعب الآخر ليس جاهزاً!"); return; }
+            window.fbUpdate(window.gameRef, { gameStarted: true });
         };
 
         window.triggerActualStart = function() {
@@ -495,159 +392,115 @@
             ball.style.display = 'block';
             window.gameRunning = true;
             resizeGame();
-
-            if (window.myRole === 1) {
-                resetBall(1);
-                window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
-            }
+            if (window.myRole === 1) { resetBall(1); window.fbUpdate(window.gameRef, { ballX, ballY }); }
             requestAnimationFrame(updateGame);
         };
 
-        // التحكم بالسلايدر - طبيعي 100% بدون أي عكس
         function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
-            const boxRectNow = gameBox.getBoundingClientRect();
+            const box = gameBox.getBoundingClientRect();
             const sliderRect = sliderContainer.getBoundingClientRect();
-            
-            let relativeX = clientX - sliderRect.left;
-            let percentage = relativeX / sliderRect.width;
-            percentage = Math.max(0, Math.min(1, percentage));
-
-            sliderKnob.style.left = `calc(${percentage * 100}% - 25px)`;
-
-            let currentX = percentage * (boxRectNow.width - paddleWidth);
-            myPaddleX = currentX;
-            // تحديث المضرب الخاص باللاعب محلياً
+            let percent = (clientX - sliderRect.left) / sliderRect.width;
+            percent = Math.min(1, Math.max(0, percent));
+            sliderKnob.style.left = `calc(${percent * 100}% - 25px)`;
+            let newX = percent * (box.width - paddleWidth);
+            myPaddleX = Math.min(box.width - paddleWidth, Math.max(0, newX));
             playerPaddleElem.style.left = myPaddleX + 'px';
-
-            let dataToSend = {};
-            if (window.myRole === 1) {
-                // اللاعب 1 يتحكم بـ playerX (المضرب السفلي)
-                dataToSend["playerX"] = myPaddleX;
-            } else if (window.myRole === 2) {
-                // اللاعب 2 يتحكم بـ cpuX (المضرب السفلي في عالمه، لكن في قاعدة البيانات يمثل المضرب العلوي للاعب 1)
-                dataToSend["cpuX"] = myPaddleX;
-            }
-            window.fbUpdate(window.gameRef, dataToSend);
+            if (window.myRole === 1) window.fbUpdate(window.gameRef, { playerX: myPaddleX });
+            else window.fbUpdate(window.gameRef, { cpuX: myPaddleX });
         }
 
-        sliderContainer.addEventListener('touchstart', (e) => { 
-            e.preventDefault();
-            handleSliderMove(e.touches[0].clientX); 
-        }, { passive: false });
-        sliderContainer.addEventListener('touchmove', (e) => { 
-            e.preventDefault();
-            handleSliderMove(e.touches[0].clientX); 
-        }, { passive: false });
+        sliderContainer.addEventListener('touchstart', (e) => { e.preventDefault(); handleSliderMove(e.touches[0].clientX); }, { passive: false });
+        sliderContainer.addEventListener('touchmove', (e) => { e.preventDefault(); handleSliderMove(e.touches[0].clientX); }, { passive: false });
         sliderContainer.addEventListener('mousedown', (e) => {
             handleSliderMove(e.clientX);
-            function onMouseMove(event) { handleSliderMove(event.clientX); }
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', () => { window.removeEventListener('mousemove', onMouseMove); }, { once: true });
+            const onMove = (ev) => handleSliderMove(ev.clientX);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', () => window.removeEventListener('mousemove', onMove), { once: true });
         });
 
         function resetBall(direction) {
             boxRect = gameBox.getBoundingClientRect();
-            ballX = (boxRect.width / 2) - (ballSize / 2);
-            ballY = (boxRect.height / 2) - (ballSize / 2);
-            ballSpeedX = (Math.random() - 0.5) * 4.8;
+            ballX = (boxRect.width / 2) - BALL_RADIUS;
+            ballY = (boxRect.height / 2) - BALL_RADIUS;
+            ballSpeedX = (Math.random() - 0.5) * 4.5;
             ballSpeedY = direction * initialSpeedY;
-            if (Math.abs(ballSpeedX) < 1.2) ballSpeedX = ballSpeedX > 0 ? 1.5 : -1.5;
+            if (Math.abs(ballSpeedX) < 1.2) ballSpeedX = ballSpeedX > 0 ? 1.8 : -1.8;
+        }
+
+        // فيزياء دقيقة: منع التخلل والارتداد الطبيعي
+        function handleCollision() {
+            // الجدران الجانبية (يمين/يسار)
+            if (ballX <= 0) { ballX = 0; ballSpeedX = -ballSpeedX; }
+            if (ballX >= boxRect.width - ballSize) { ballX = boxRect.width - ballSize; ballSpeedX = -ballSpeedX; }
+
+            // مضرب اللاعب السفلي (نفسه)
+            const playerPaddleRect = { x: myPaddleX, y: boxRect.height - 25 - paddleHeight, w: paddleWidth, h: paddleHeight };
+            const ballRect = { x: ballX, y: ballY, w: ballSize, h: ballSize };
+            if (ballRect.x < playerPaddleRect.x + playerPaddleRect.w && ballRect.x + ballRect.w > playerPaddleRect.x &&
+                ballRect.y < playerPaddleRect.y + playerPaddleRect.h && ballRect.y + ballRect.h > playerPaddleRect.y) {
+                // ارتطام دقيق
+                let hitPos = (ballX + BALL_RADIUS) - (playerPaddleRect.x + paddleWidth/2);
+                let angle = hitPos * 0.28;
+                ballSpeedX = Math.min(6, Math.max(-6, angle));
+                ballSpeedY = -Math.abs(ballSpeedY);
+                // إزاحة الكرة لخارج المضرب لمنع التشبث
+                ballY = playerPaddleRect.y - ballSize;
+            }
+
+            // مضرب الخصم العلوي (يتم جلبه من البيانات)
+            let cpuX = (window.myRole === 1) ? (window.onlineData?.cpuX ?? (boxRect.width/2 - paddleWidth/2)) : (window.onlineData?.playerX ?? (boxRect.width/2 - paddleWidth/2));
+            const cpuPaddleRect = { x: cpuX, y: 25, w: paddleWidth, h: paddleHeight };
+            if (ballRect.x < cpuPaddleRect.x + cpuPaddleRect.w && ballRect.x + ballRect.w > cpuPaddleRect.x &&
+                ballRect.y < cpuPaddleRect.y + cpuPaddleRect.h && ballRect.y + ballRect.h > cpuPaddleRect.y) {
+                let hitPos = (ballX + BALL_RADIUS) - (cpuPaddleRect.x + paddleWidth/2);
+                let angle = hitPos * 0.28;
+                ballSpeedX = Math.min(6, Math.max(-6, angle));
+                ballSpeedY = Math.abs(ballSpeedY);
+                ballY = cpuPaddleRect.y + paddleHeight;
+            }
         }
 
         function updateGame() {
             if (!window.gameRunning) return;
-
             if (window.myRole === 1) {
-                let data = window.onlineData;
-                // جلب موقع مضرب الخصم (اللاعب 2) من قاعدة البيانات
-                let currentCpuX = (data && data.cpuX !== undefined) ? data.cpuX : (boxRect.width / 2 - paddleWidth / 2);
-                
                 ballX += ballSpeedX;
                 ballY += ballSpeedY;
+                handleCollision();
 
-                // ارتطام الجدران الجانبية
-                if (ballX <= 0) {
-                    ballX = 0;
-                    ballSpeedX = -ballSpeedX;
-                }
-                if (ballX >= boxRect.width - ballSize) {
-                    ballX = boxRect.width - ballSize;
-                    ballSpeedX = -ballSpeedX;
-                }
-
-                // ارتطام مضرب الخصم العلوي (اللاعب 2)
-                if (ballY <= 25 + paddleHeight && ballY >= 23) {
-                    if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
-                        ballY = 25 + paddleHeight;
-                        ballSpeedY = -ballSpeedY;
-                        let hitPoint = (ballX + ballSize/2) - (currentCpuX + paddleWidth/2);
-                        let maxAngle = 6;
-                        ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
-                    }
-                }
-
-                // ارتطام مضرب اللاعب السفلي (نفسه)
-                if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
-                    if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
-                        ballY = boxRect.height - 25 - paddleHeight - ballSize;
-                        ballSpeedY = -ballSpeedY;
-                        let hitPoint = (ballX + ballSize/2) - (myPaddleX + paddleWidth/2);
-                        let maxAngle = 6;
-                        ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
-                    }
-                }
-
-                // تسجيل الأهداف: بدون أي تأثيرات
-                if (ballY < 0) {
-                    let currentP = parseInt(document.getElementById('pScore').innerText) + 1;
-                    window.fbUpdate(window.gameRef, { "pScore": currentP });
-                    resetBall(-1);
-                    window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
-                } 
-                else if (ballY > boxRect.height) {
-                    let currentC = parseInt(document.getElementById('cScore').innerText) + 1;
-                    window.fbUpdate(window.gameRef, { "cScore": currentC });
+                // تسجيل الأهداف (فقط عندما تخرج الكرة تماماً من الحقل)
+                if (ballY + ballSize < 0) {
+                    let newScore = parseInt(document.getElementById('pScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { pScore: newScore });
                     resetBall(1);
-                    window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
+                    window.fbUpdate(window.gameRef, { ballX, ballY });
+                } else if (ballY > boxRect.height) {
+                    let newScore = parseInt(document.getElementById('cScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { cScore: newScore });
+                    resetBall(-1);
+                    window.fbUpdate(window.gameRef, { ballX, ballY });
                 }
 
-                window.fbUpdate(window.gameRef, { "ballX": ballX, "ballY": ballY });
+                window.fbUpdate(window.gameRef, { ballX, ballY });
                 ball.style.left = ballX + 'px';
                 ball.style.top = ballY + 'px';
-            } 
-            else if (window.myRole === 2) {
-                // اللاعب 2 فقط يقوم بتحديث واجهته بناءً على البيانات دون أي تحكم فيزيائي
+            } else if (window.myRole === 2) {
                 const data = window.onlineData;
-                if (data && data.ballX !== undefined && data.ballY !== undefined && boxRect.width) {
+                if (data && data.ballX !== undefined && boxRect.width) {
                     let invX = boxRect.width - ballSize - data.ballX;
                     let invY = boxRect.height - ballSize - data.ballY;
                     ball.style.left = invX + 'px';
                     ball.style.top = invY + 'px';
                 }
-                if (data && data.playerX !== undefined) {
-                    // مضرب الخصم (اللاعب 1) يظهر في الأعلى
-                    cpuPaddleElem.style.left = data.playerX + 'px';
-                }
-                if (data && data.cpuX !== undefined) {
-                    // مضرب اللاعب 2 نفسه موجود في الأسفل
-                    playerPaddleElem.style.left = data.cpuX + 'px';
-                    // مزامنة myPaddleX مع القيمة من Firebase للحفاظ على التناسق
-                    myPaddleX = data.cpuX;
-                }
-                if (data) {
-                    document.getElementById('pScore').innerText = data.pScore || 0;
-                    document.getElementById('cScore').innerText = data.cScore || 0;
-                }
+                if (data?.playerX !== undefined) cpuPaddleElem.style.left = data.playerX + 'px';
+                if (data?.cpuX !== undefined) { playerPaddleElem.style.left = data.cpuX + 'px'; myPaddleX = data.cpuX; }
+                document.getElementById('pScore').innerText = data?.pScore ?? 0;
+                document.getElementById('cScore').innerText = data?.cScore ?? 0;
             }
-            
             requestAnimationFrame(updateGame);
         }
-        
-        window.addEventListener('load', () => {
-            resizeGame();
-            setTimeout(resizeGame, 100);
-        });
+
+        window.addEventListener('load', () => { resizeGame(); setTimeout(resizeGame, 100); });
     </script>
 </body>
-</html>
+</html> 
