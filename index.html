@@ -46,7 +46,6 @@
             transition: none;
         }
 
-        /* تم إزالة كل تأثيرات النيون والاحتفالات نهائياً */
         .control-slider-container {
             width: 100%;
             max-width: 360px;
@@ -97,20 +96,25 @@
             width: 85px;
             height: 16px; 
             border-radius: 30px;
-            left: calc(50% - 42.5px);
             transition: none; 
         }
 
-        #cpuPaddle {
+        /* المضرب العلوي (الخصم) بشكل عام */
+        .paddle-top {
             top: 25px;
-            background: #33ff66;
-            box-shadow: 0 0 20px #33ff66;
+        }
+        /* المضرب السفلي (اللاعب) بشكل عام */
+        .paddle-bottom {
+            bottom: 25px;
         }
 
         #playerPaddle {
-            bottom: 25px; 
-            background: #ff3344;
             box-shadow: 0 0 20px #ff3344;
+            background: #ff3344;
+        }
+        #cpuPaddle {
+            box-shadow: 0 0 20px #33ff66;
+            background: #33ff66;
         }
 
         #ball {
@@ -135,11 +139,11 @@
             pointer-events: none;
         }
 
+        /* مواقع افتراضية للاعب 1 */
         #pScore {
             bottom: 70px; right: 25px;
             color: #ff3344; text-shadow: 0 0 20px #ff3344;
         }
-
         #cScore {
             top: 70px; left: 25px;
             color: #33ff66; text-shadow: 0 0 20px #33ff66;
@@ -213,8 +217,7 @@
             box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
         }
 
-        /* تم إزالة كل تأثيرات الاهتزاز والحركة - صمت تام وهدوء */
-        /* لا شيك, لا نيون, لا هز */
+        /* تم إزالة كل تأثيرات الاهتزاز والحركة */
     </style>
 </head>
 <body>
@@ -224,8 +227,8 @@
         <div id="pScore" class="score-display">0</div>
         
         <div class="net"></div>
-        <div id="cpuPaddle" class="paddle"></div>
-        <div id="playerPaddle" class="paddle"></div>
+        <div id="cpuPaddle" class="paddle paddle-top"></div>
+        <div id="playerPaddle" class="paddle paddle-bottom"></div>
         <div id="ball"></div>
 
         <div id="startOverlay" class="overlay">
@@ -272,7 +275,7 @@
         let lastPScore = 0;
         let lastCScore = 0;
 
-        // مراقبة البيانات من Firebase - بدون أي تأثيرات نهائياً
+        // مراقبة البيانات من Firebase
         onValue(gameRef, (snapshot) => {
             const data = snapshot.val();
             window.onlineData = data; 
@@ -291,7 +294,7 @@
                     statusMessage.innerText = "اللاعبان متصلان! اضغط 'بدء المواجهة'.";
                 }
             } else {
-                if (data && data.p1_online && data.p2_online) {
+                if (data && data.p1_online && data.p2_online && !data.gameStarted) {
                     statusMessage.innerHTML = "✅ اكتمل الاتصال! اضغط زر الانطلاق.";
                     roleInput.style.display = "none";
                     joinBtn.style.display = "none";
@@ -299,25 +302,30 @@
                 }
 
                 if (data) {
-                    // تحديث الأرقام فقط - بدون أي ومضات أو أصوات أو اهتزازات
+                    // تحديث الأرقام فقط
                     if (data.pScore !== undefined && data.pScore !== lastPScore) {
                         document.getElementById('pScore').innerText = data.pScore;
                         lastPScore = data.pScore;
-                        // لا شيء إطلاقاً
                     }
                     if (data.cScore !== undefined && data.cScore !== lastCScore) {
                         document.getElementById('cScore').innerText = data.cScore;
                         lastCScore = data.cScore;
-                        // صمت تام
                     }
 
-                    // تحديث مواضع المضارب والكرة بناءً على الدور
+                    // تحديث مواضع المضارب بناءً على الدور الحقيقي
                     if (window.myRole === 1) {
-                        if (data.cpuX !== undefined) window.updateTopPaddleX(data.cpuX);
+                        // اللاعب 1: مضربه الخاص هو playerPaddle (أسفل)، مضرب الخصم هو cpuPaddle (أعلى)
+                        if (data.playerX !== undefined) window.updateLocalPaddle(data.playerX, 'player');
+                        if (data.cpuX !== undefined) window.updateLocalPaddle(data.cpuX, 'cpu');
                         if (data.ballX !== undefined && data.ballY !== undefined) window.updateBallPosition(data.ballX, data.ballY);
                     } else if (window.myRole === 2) {
-                        if (data.playerX !== undefined) window.updateTopPaddleX(data.playerX);
+                        // اللاعب 2: مضربه الخاص هو playerPaddle (أسفل)، ولكن بالنسبة له، الخصم هو اللاعب 1
+                        // في بيانات الفايربيز، cpuX تمثل موقع اللاعب 2 الفعلي، و playerX موقع اللاعب 1 الفعلي.
+                        // نعكس المنطق: مضرب اللاعب 2 الخاص به = بيانات cpuX (لأنه هو الذي يتحكم به)، ومضرب الخصم = بيانات playerX
+                        if (data.cpuX !== undefined) window.updateLocalPaddle(data.cpuX, 'player');
+                        if (data.playerX !== undefined) window.updateLocalPaddle(data.playerX, 'cpu');
                         if (data.ballX !== undefined && data.ballY !== undefined && window.boxRectW) {
+                            // عكس إحداثيات الكرة للاعب 2
                             let invertedX = window.boxRectW - 20 - data.ballX;
                             let invertedY = window.boxRectH - 20 - data.ballY;
                             window.updateBallPosition(invertedX, invertedY);
@@ -335,16 +343,12 @@
     <script>
         // ------------------- عناصر DOM -------------------
         const gameBox = document.getElementById('gameBox');
-        const playerPaddle = document.getElementById('playerPaddle');
-        const cpuPaddle = document.getElementById('cpuPaddle');
+        const playerPaddleElem = document.getElementById('playerPaddle');
+        const cpuPaddleElem = document.getElementById('cpuPaddle');
         const ball = document.getElementById('ball');
         const startOverlay = document.getElementById('startOverlay');
         const sliderContainer = document.getElementById('sliderContainer');
         const sliderKnob = document.getElementById('sliderKnob');
-
-        // ========== تم حذف كل دوال الصوت والاهتزاز والنيون ==========
-        // لا توجد دالة triggerScreenShake، لا توجد triggerScoreCelebration
-        // كل شيء هادئ تماماً حتى عند تسجيل الأهداف
 
         window.myRole = 0;
         window.hasJoined = false;
@@ -374,20 +378,24 @@
                 let maxX = boxRect.width - paddleWidth;
                 if (myPaddleX > maxX) myPaddleX = maxX;
                 if (myPaddleX < 0) myPaddleX = 0;
-                playerPaddle.style.left = myPaddleX + 'px';
+                playerPaddleElem.style.left = myPaddleX + 'px';
+            } else if (window.myRole === 2 && window.gameRunning) {
+                // للاعب 2 نعيد ضبط موضع المضرب الخاص به بناءً على myPaddleX الحالي
+                let maxX = boxRect.width - paddleWidth;
+                if (myPaddleX > maxX) myPaddleX = maxX;
+                if (myPaddleX < 0) myPaddleX = 0;
+                playerPaddleElem.style.left = myPaddleX + 'px';
             }
         }
         window.addEventListener('resize', resizeGame);
         window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 150); });
 
-        window.updateTopPaddleX = function(x) { 
-            if (!cpuPaddle) return;
-            if (window.myRole === 2) {
-                let invertedX = boxRect.width - paddleWidth - x;
-                if (isNaN(invertedX)) invertedX = 0;
-                cpuPaddle.style.left = invertedX + 'px';
-            } else {
-                cpuPaddle.style.left = x + 'px';
+        // دالة لتحديث المضارب محلياً (بدون عكس منطق المعادلات هنا، كل شيء يتم عبر الـ role)
+        window.updateLocalPaddle = function(x, type) {
+            if (type === 'player') {
+                playerPaddleElem.style.left = x + 'px';
+            } else if (type === 'cpu') {
+                cpuPaddleElem.style.left = x + 'px';
             }
         };
 
@@ -408,34 +416,37 @@
             window.hasJoined = true;
             resizeGame();
 
-            // تخصيص الألوان والواجهة حسب الدور (بدون أي تأثيرات إضافية)
+            // تخصيص الألوان والواجهة حسب الدور
             if (window.myRole === 2) {
-                playerPaddle.style.background = "#33ff66";
-                playerPaddle.style.boxShadow = "0 0 20px #33ff66";
-                cpuPaddle.style.background = "#ff3344";
-                cpuPaddle.style.boxShadow = "0 0 20px #ff3344";
+                // اللاعب 2: مضربه الخاص أخضر، والخصم أحمر
+                playerPaddleElem.style.background = "#33ff66";
+                playerPaddleElem.style.boxShadow = "0 0 20px #33ff66";
+                cpuPaddleElem.style.background = "#ff3344";
+                cpuPaddleElem.style.boxShadow = "0 0 20px #ff3344";
                 
                 sliderKnob.style.background = "#33ff66";
                 sliderKnob.style.boxShadow = "0 0 25px #33ff66, 0 0 5px #fff";
                 sliderContainer.style.borderColor = "#33ff66";
                 sliderContainer.style.boxShadow = "0 0 20px rgba(51, 255, 102, 0.25)";
                 
+                // تعديل مواقع النقاط للاعب 2
                 const pScoreDiv = document.getElementById('pScore');
                 const cScoreDiv = document.getElementById('cScore');
-                pScoreDiv.style.color = "#33ff66";
+                pScoreDiv.style.color = "#33ff66"; // نتيجته هو (اللاعب 2) باللون الأخضر
                 pScoreDiv.style.textShadow = "0 0 20px #33ff66";
                 pScoreDiv.style.bottom = "auto"; pScoreDiv.style.top = "70px"; pScoreDiv.style.left = "25px";
                 pScoreDiv.style.right = "auto";
                 
-                cScoreDiv.style.color = "#ff3344";
+                cScoreDiv.style.color = "#ff3344"; // نتيجة الخصم باللون الأحمر
                 cScoreDiv.style.textShadow = "0 0 20px #ff3344";
                 cScoreDiv.style.top = "auto"; cScoreDiv.style.bottom = "70px"; cScoreDiv.style.right = "25px";
                 cScoreDiv.style.left = "auto";
             } else {
-                playerPaddle.style.background = "#ff3344";
-                playerPaddle.style.boxShadow = "0 0 20px #ff3344";
-                cpuPaddle.style.background = "#33ff66";
-                cpuPaddle.style.boxShadow = "0 0 20px #33ff66";
+                // اللاعب 1: مضربه الخاص أحمر، والخصم أخضر
+                playerPaddleElem.style.background = "#ff3344";
+                playerPaddleElem.style.boxShadow = "0 0 20px #ff3344";
+                cpuPaddleElem.style.background = "#33ff66";
+                cpuPaddleElem.style.boxShadow = "0 0 20px #33ff66";
                 sliderKnob.style.background = "#00d2ff";
                 sliderKnob.style.boxShadow = "0 0 25px #00d2ff, 0 0 5px #fff";
                 sliderContainer.style.borderColor = "#00d2ff";
@@ -456,13 +467,17 @@
                     pScore: 0,
                     cScore: 0,
                     gameStarted: false,
-                    playerX: myPaddleX,
-                    cpuX: myPaddleX,
+                    playerX: myPaddleX,  // موقع المضرب السفلي للاعب 1
+                    cpuX: myPaddleX,     // موقع المضرب العلوي (اللاعب 2)
                     ballX: (boxRect.width/2)-10,
                     ballY: (boxRect.height/2)-10
                 });
             } else if (window.myRole === 2) {
-                window.fbUpdate(window.gameRef, { "p2_online": true });
+                // عند انضمام اللاعب 2، يتم تحديث cpuX (الذي يمثل مضرب اللاعب 2 بالنسبة لقاعدة البيانات)
+                window.fbUpdate(window.gameRef, { 
+                    p2_online: true,
+                    cpuX: myPaddleX 
+                });
             }
         };
 
@@ -488,7 +503,7 @@
             requestAnimationFrame(updateGame);
         };
 
-        // التحكم بالسلايدر بدون أي مؤثرات
+        // التحكم بالسلايدر - طبيعي 100% بدون أي عكس
         function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
             const boxRectNow = gameBox.getBoundingClientRect();
@@ -502,15 +517,16 @@
 
             let currentX = percentage * (boxRectNow.width - paddleWidth);
             myPaddleX = currentX;
-            playerPaddle.style.left = myPaddleX + 'px';
+            // تحديث المضرب الخاص باللاعب محلياً
+            playerPaddleElem.style.left = myPaddleX + 'px';
 
             let dataToSend = {};
             if (window.myRole === 1) {
+                // اللاعب 1 يتحكم بـ playerX (المضرب السفلي)
                 dataToSend["playerX"] = myPaddleX;
             } else if (window.myRole === 2) {
-                let originalX = boxRectNow.width - paddleWidth - myPaddleX;
-                if (originalX < 0) originalX = 0;
-                dataToSend["cpuX"] = originalX;
+                // اللاعب 2 يتحكم بـ cpuX (المضرب السفلي في عالمه، لكن في قاعدة البيانات يمثل المضرب العلوي للاعب 1)
+                dataToSend["cpuX"] = myPaddleX;
             }
             window.fbUpdate(window.gameRef, dataToSend);
         }
@@ -544,24 +560,23 @@
 
             if (window.myRole === 1) {
                 let data = window.onlineData;
+                // جلب موقع مضرب الخصم (اللاعب 2) من قاعدة البيانات
                 let currentCpuX = (data && data.cpuX !== undefined) ? data.cpuX : (boxRect.width / 2 - paddleWidth / 2);
                 
                 ballX += ballSpeedX;
                 ballY += ballSpeedY;
 
-                // ارتطام الجدران الجانبية - بدون أي تأثير بصري أو صوتي
+                // ارتطام الجدران الجانبية
                 if (ballX <= 0) {
                     ballX = 0;
                     ballSpeedX = -ballSpeedX;
-                    // لا شيء
                 }
                 if (ballX >= boxRect.width - ballSize) {
                     ballX = boxRect.width - ballSize;
                     ballSpeedX = -ballSpeedX;
-                    // لا شيء
                 }
 
-                // ارتطام مضرب الخصم العلوي - بدون تأثيرات
+                // ارتطام مضرب الخصم العلوي (اللاعب 2)
                 if (ballY <= 25 + paddleHeight && ballY >= 23) {
                     if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
                         ballY = 25 + paddleHeight;
@@ -569,11 +584,10 @@
                         let hitPoint = (ballX + ballSize/2) - (currentCpuX + paddleWidth/2);
                         let maxAngle = 6;
                         ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
-                        // صمت تام
                     }
                 }
 
-                // ارتطام مضرب اللاعب السفلي - بدون تأثيرات
+                // ارتطام مضرب اللاعب السفلي (نفسه)
                 if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
                     if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
                         ballY = boxRect.height - 25 - paddleHeight - ballSize;
@@ -581,33 +595,29 @@
                         let hitPoint = (ballX + ballSize/2) - (myPaddleX + paddleWidth/2);
                         let maxAngle = 6;
                         ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
-                        // لا اهتزاز ولا صوت
                     }
                 }
 
-                // تسجيل الأهداف: بدون أي تأثيرات إطلاقاً (لا نيون، لا اهتزاز، لا صوت، لا شيء)
+                // تسجيل الأهداف: بدون أي تأثيرات
                 if (ballY < 0) {
                     let currentP = parseInt(document.getElementById('pScore').innerText) + 1;
                     window.fbUpdate(window.gameRef, { "pScore": currentP });
-                    // تم إزالة triggerScreenShake بالكامل
                     resetBall(-1);
                     window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
                 } 
                 else if (ballY > boxRect.height) {
                     let currentC = parseInt(document.getElementById('cScore').innerText) + 1;
                     window.fbUpdate(window.gameRef, { "cScore": currentC });
-                    // لا شيء مطلقاً
                     resetBall(1);
                     window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
                 }
 
-                // تحديث موقع الكرة
                 window.fbUpdate(window.gameRef, { "ballX": ballX, "ballY": ballY });
                 ball.style.left = ballX + 'px';
                 ball.style.top = ballY + 'px';
             } 
             else if (window.myRole === 2) {
-                // الدور الثاني: فقط عرض البيانات بدون أي تفاعل فيزيائي
+                // اللاعب 2 فقط يقوم بتحديث واجهته بناءً على البيانات دون أي تحكم فيزيائي
                 const data = window.onlineData;
                 if (data && data.ballX !== undefined && data.ballY !== undefined && boxRect.width) {
                     let invX = boxRect.width - ballSize - data.ballX;
@@ -616,11 +626,14 @@
                     ball.style.top = invY + 'px';
                 }
                 if (data && data.playerX !== undefined) {
-                    let invPaddle = boxRect.width - paddleWidth - data.playerX;
-                    playerPaddle.style.left = invPaddle + 'px';
+                    // مضرب الخصم (اللاعب 1) يظهر في الأعلى
+                    cpuPaddleElem.style.left = data.playerX + 'px';
                 }
                 if (data && data.cpuX !== undefined) {
-                    cpuPaddle.style.left = data.cpuX + 'px';
+                    // مضرب اللاعب 2 نفسه موجود في الأسفل
+                    playerPaddleElem.style.left = data.cpuX + 'px';
+                    // مزامنة myPaddleX مع القيمة من Firebase للحفاظ على التناسق
+                    myPaddleX = data.cpuX;
                 }
                 if (data) {
                     document.getElementById('pScore').innerText = data.pScore || 0;
@@ -637,4 +650,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
