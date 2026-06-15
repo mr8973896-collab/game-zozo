@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyber Pong</title>
+    <title>سايلنت بونج - هدوء تام</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,7 +22,7 @@
 
         body {
             color: #fff;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', 'Orbitron', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -31,7 +31,6 @@
             touch-action: none; 
         }
 
-        /* طاولة اللعب المرنة والذكية */
         .game-container {
             width: 100%;
             max-width: 360px;
@@ -44,39 +43,10 @@
             position: relative;
             overflow: hidden;
             touch-action: none;
+            transition: none;
         }
 
-        /* أنيميشن الحافة النيون الجارية الممزوجة بسرعة فائقة عند الجون */
-        @keyframes neonRun {
-            0% {
-                border-image: linear-gradient(0deg, #fffb00, #ff3344, #b026ff, #00d2ff) 1;
-                box-shadow: 0 0 45px #ff3344, inset 0 0 25px #fffb00;
-            }
-            25% {
-                border-image: linear-gradient(90deg, #00d2ff, #fffb00, #ff3344, #b026ff) 1;
-                box-shadow: 0 0 45px #b026ff, inset 0 0 25px #ff3344;
-            }
-            50% {
-                border-image: linear-gradient(180deg, #b026ff, #00d2ff, #fffb00, #ff3344) 1;
-                box-shadow: 0 0 45px #00d2ff, inset 0 0 25px #b026ff;
-            }
-            75% {
-                border-image: linear-gradient(270deg, #ff3344, #b026ff, #00d2ff, #fffb00) 1;
-                box-shadow: 0 0 45px #fffb00, inset 0 0 25px #00d2ff;
-            }
-            100% {
-                border-image: linear-gradient(360deg, #fffb00, #ff3344, #b026ff, #00d2ff) 1;
-                box-shadow: 0 0 45px #ff3344, inset 0 0 25px #fffb00;
-            }
-        }
-
-        /* كلاس الاحتفال الجاري والمبهر */
-        .score-celebration {
-            animation: neonRun 0.15s linear infinite; /* سريعة وخاطفة للمشاعر */
-            border-radius: 20px; /* الحفاظ على الانحناء */
-        }
-
-        /* شريط التحكم المضيء */
+        /* تم إزالة كل تأثيرات النيون والاحتفالات نهائياً */
         .control-slider-container {
             width: 100%;
             max-width: 360px;
@@ -243,16 +213,8 @@
             box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
         }
 
-        .shake {
-            animation: hitShake 0.15s ease-in-out;
-        }
-
-        @keyframes hitShake {
-            0% { transform: translate(0, 0); }
-            25% { transform: translate(-3px, 3px); }
-            50% { transform: translate(3px, -3px); }
-            100% { transform: translate(0, 0); }
-        }
+        /* تم إزالة كل تأثيرات الاهتزاز والحركة - صمت تام وهدوء */
+        /* لا شيك, لا نيون, لا هز */
     </style>
 </head>
 <body>
@@ -267,14 +229,14 @@
         <div id="ball"></div>
 
         <div id="startOverlay" class="overlay">
-            <h2>CYBER PONG</h2>
-            <div class="status-msg" id="statusMessage">جاري المزامنة...</div>
+            <h2>⚡ سايلنت بونج ⚡</h2>
+            <div class="status-msg" id="statusMessage">انتظر الاتصال ...</div>
             
-            <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="الدور">
+            <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="رقم 1 أو 2">
             
             <div class="btn-group">
-                <button id="joinBtn" onclick="window.joinGame()">دخول الساحة 🚀</button>
-                <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">انطلاق المواجهة 🔥</button>
+                <button id="joinBtn" onclick="window.joinGame()">🚀 دخول الساحة</button>
+                <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">🔥 بدء المواجهة</button>
             </div>
         </div>
     </div>
@@ -310,6 +272,7 @@
         let lastPScore = 0;
         let lastCScore = 0;
 
+        // مراقبة البيانات من Firebase - بدون أي تأثيرات نهائياً
         onValue(gameRef, (snapshot) => {
             const data = snapshot.val();
             window.onlineData = data; 
@@ -321,41 +284,42 @@
 
             if (!window.hasJoined) {
                 if (!data || (!data.p1_online && !data.p2_online)) {
-                    statusMessage.innerText = "أدخل رقم 1 لتلعب باللون الأحمر من الأسفل.";
+                    statusMessage.innerText = "أدخل رقم 1 للتحكم بالأسفل (أحمر).";
                 } else if (data.p1_online && !data.p2_online) {
-                    statusMessage.innerHTML = "الخصم جاهز بالأحمر!<br>أدخل رقم 2 لتلعب بالأخضر من الأسفل.";
+                    statusMessage.innerHTML = "اللاعب الأول متصل (أحمر)<br>أدخل رقم 2 للعب بالأخضر.";
                 } else if (data.p1_online && data.p2_online) {
-                    statusMessage.innerText = "الساحة ممتلئة حالياً باللاعبين.";
+                    statusMessage.innerText = "اللاعبان متصلان! اضغط 'بدء المواجهة'.";
                 }
             } else {
                 if (data && data.p1_online && data.p2_online) {
-                    statusMessage.innerHTML = "⚡ اكتمل الاتصال اللحظي! ⚡<br>اضغط زر الانطلاق لبدء اللعب.";
+                    statusMessage.innerHTML = "✅ اكتمل الاتصال! اضغط زر الانطلاق.";
                     roleInput.style.display = "none";
                     joinBtn.style.display = "none";
                     startBtn.style.display = "block";
                 }
 
                 if (data) {
-                    // تشغيل احتفالية النيون الجاري فور إحراز هدف عند الطرفين
+                    // تحديث الأرقام فقط - بدون أي ومضات أو أصوات أو اهتزازات
                     if (data.pScore !== undefined && data.pScore !== lastPScore) {
                         document.getElementById('pScore').innerText = data.pScore;
                         lastPScore = data.pScore;
-                        window.triggerScoreCelebration();
+                        // لا شيء إطلاقاً
                     }
                     if (data.cScore !== undefined && data.cScore !== lastCScore) {
                         document.getElementById('cScore').innerText = data.cScore;
                         lastCScore = data.cScore;
-                        window.triggerScoreCelebration();
+                        // صمت تام
                     }
 
+                    // تحديث مواضع المضارب والكرة بناءً على الدور
                     if (window.myRole === 1) {
                         if (data.cpuX !== undefined) window.updateTopPaddleX(data.cpuX);
                         if (data.ballX !== undefined && data.ballY !== undefined) window.updateBallPosition(data.ballX, data.ballY);
                     } else if (window.myRole === 2) {
                         if (data.playerX !== undefined) window.updateTopPaddleX(data.playerX);
-                        if (data.ballX !== undefined && data.ballY !== undefined) {
-                            let invertedX = boxRect.width - ballSize - data.ballX;
-                            let invertedY = boxRect.height - ballSize - data.ballY;
+                        if (data.ballX !== undefined && data.ballY !== undefined && window.boxRectW) {
+                            let invertedX = window.boxRectW - 20 - data.ballX;
+                            let invertedY = window.boxRectH - 20 - data.ballY;
                             window.updateBallPosition(invertedX, invertedY);
                         }
                     }
@@ -369,54 +333,26 @@
     </script>
 
     <script>
+        // ------------------- عناصر DOM -------------------
         const gameBox = document.getElementById('gameBox');
         const playerPaddle = document.getElementById('playerPaddle');
         const cpuPaddle = document.getElementById('cpuPaddle');
         const ball = document.getElementById('ball');
-        const pScoreDisplay = document.getElementById('pScore');
-        const cScoreDisplay = document.getElementById('cScore');
         const startOverlay = document.getElementById('startOverlay');
         const sliderContainer = document.getElementById('sliderContainer');
         const sliderKnob = document.getElementById('sliderKnob');
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
-            if (type === 'hit') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(320, now);
-                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                osc.start(now); osc.stop(now + 0.08);
-            } else if (type === 'score') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(580, now);
-                osc.frequency.exponentialRampToValueAtTime(1400, now + 0.35);
-                gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-                osc.start(now); osc.stop(now + 0.35);
-            }
-        }
-
-        function triggerScreenShake() {
-            gameBox.classList.add('shake');
-            setTimeout(() => gameBox.classList.remove('shake'), 150);
-        }
-
-        // تشغيل تأثير الألوان الجارية حول الأطراف لفترة حماسية مؤقتة ثم العودة للوضع الهادئ
-        window.triggerScoreCelebration = function() {
-            gameBox.classList.add('score-celebration');
-            setTimeout(() => {
-                gameBox.classList.remove('score-celebration');
-                gameBox.style.borderImage = "none"; // العودة للحد العادي الآمن
-            }, 1200); // يستمر جريان الألوان لثانية وثانيتين لإشعال الحماس
-        };
+        // ========== تم حذف كل دوال الصوت والاهتزاز والنيون ==========
+        // لا توجد دالة triggerScreenShake، لا توجد triggerScoreCelebration
+        // كل شيء هادئ تماماً حتى عند تسجيل الأهداف
 
         window.myRole = 0;
         window.hasJoined = false;
         window.gameRunning = false;
 
         let boxRect = gameBox.getBoundingClientRect();
+        window.boxRectW = boxRect.width;
+        window.boxRectH = boxRect.height;
         let paddleWidth = 85;
         let paddleHeight = 16;
         let ballSize = 20; 
@@ -427,17 +363,28 @@
 
         let ballSpeedX = 0;
         let ballSpeedY = 0;
-        const initialSpeedY = 6.5; 
+        const initialSpeedY = 6.2; 
 
         function resizeGame() {
             boxRect = gameBox.getBoundingClientRect();
+            window.boxRectW = boxRect.width;
+            window.boxRectH = boxRect.height;
+            if (!window.gameRunning) return;
+            if (window.myRole === 1 && window.gameRunning) {
+                let maxX = boxRect.width - paddleWidth;
+                if (myPaddleX > maxX) myPaddleX = maxX;
+                if (myPaddleX < 0) myPaddleX = 0;
+                playerPaddle.style.left = myPaddleX + 'px';
+            }
         }
         window.addEventListener('resize', resizeGame);
-        window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 200); });
+        window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 150); });
 
         window.updateTopPaddleX = function(x) { 
+            if (!cpuPaddle) return;
             if (window.myRole === 2) {
                 let invertedX = boxRect.width - paddleWidth - x;
+                if (isNaN(invertedX)) invertedX = 0;
                 cpuPaddle.style.left = invertedX + 'px';
             } else {
                 cpuPaddle.style.left = x + 'px';
@@ -445,6 +392,7 @@
         };
 
         window.updateBallPosition = function(x, y) {
+            if (!ball) return;
             ballX = x; ballY = y;
             ball.style.left = ballX + 'px';
             ball.style.top = ballY + 'px';
@@ -453,13 +401,14 @@
         window.joinGame = function() {
             const roleInput = document.getElementById("playerRoleInput").value;
             if (roleInput !== "1" && roleInput !== "2") {
-                alert("اكتب 1 أو 2 فقط لتحديد دورك!");
+                alert("❌ يرجى كتابة 1 أو 2 فقط لتحديد دورك!");
                 return;
             }
             window.myRole = parseInt(roleInput);
             window.hasJoined = true;
             resizeGame();
 
+            // تخصيص الألوان والواجهة حسب الدور (بدون أي تأثيرات إضافية)
             if (window.myRole === 2) {
                 playerPaddle.style.background = "#33ff66";
                 playerPaddle.style.boxShadow = "0 0 20px #33ff66";
@@ -471,13 +420,33 @@
                 sliderContainer.style.borderColor = "#33ff66";
                 sliderContainer.style.boxShadow = "0 0 20px rgba(51, 255, 102, 0.25)";
                 
-                pScoreDisplay.style.color = "#33ff66";
-                pScoreDisplay.style.textShadow = "0 0 20px #33ff66";
-                pScoreDisplay.style.bottom = "auto"; pScoreDisplay.style.top = "70px"; pScoreDisplay.style.left = "25px";
+                const pScoreDiv = document.getElementById('pScore');
+                const cScoreDiv = document.getElementById('cScore');
+                pScoreDiv.style.color = "#33ff66";
+                pScoreDiv.style.textShadow = "0 0 20px #33ff66";
+                pScoreDiv.style.bottom = "auto"; pScoreDiv.style.top = "70px"; pScoreDiv.style.left = "25px";
+                pScoreDiv.style.right = "auto";
                 
-                cScoreDisplay.style.color = "#ff3344";
-                cScoreDisplay.style.textShadow = "0 0 20px #ff3344";
-                cScoreDisplay.style.top = "auto"; cScoreDisplay.style.bottom = "70px"; cScoreDisplay.style.right = "25px";
+                cScoreDiv.style.color = "#ff3344";
+                cScoreDiv.style.textShadow = "0 0 20px #ff3344";
+                cScoreDiv.style.top = "auto"; cScoreDiv.style.bottom = "70px"; cScoreDiv.style.right = "25px";
+                cScoreDiv.style.left = "auto";
+            } else {
+                playerPaddle.style.background = "#ff3344";
+                playerPaddle.style.boxShadow = "0 0 20px #ff3344";
+                cpuPaddle.style.background = "#33ff66";
+                cpuPaddle.style.boxShadow = "0 0 20px #33ff66";
+                sliderKnob.style.background = "#00d2ff";
+                sliderKnob.style.boxShadow = "0 0 25px #00d2ff, 0 0 5px #fff";
+                sliderContainer.style.borderColor = "#00d2ff";
+                const pScoreDiv = document.getElementById('pScore');
+                const cScoreDiv = document.getElementById('cScore');
+                pScoreDiv.style.color = "#ff3344";
+                pScoreDiv.style.bottom = "70px"; pScoreDiv.style.right = "25px";
+                pScoreDiv.style.top = "auto"; pScoreDiv.style.left = "auto";
+                cScoreDiv.style.color = "#33ff66";
+                cScoreDiv.style.top = "70px"; cScoreDiv.style.left = "25px";
+                cScoreDiv.style.bottom = "auto";
             }
 
             if (window.myRole === 1) {
@@ -488,7 +457,9 @@
                     cScore: 0,
                     gameStarted: false,
                     playerX: myPaddleX,
-                    cpuX: myPaddleX
+                    cpuX: myPaddleX,
+                    ballX: (boxRect.width/2)-10,
+                    ballY: (boxRect.height/2)-10
                 });
             } else if (window.myRole === 2) {
                 window.fbUpdate(window.gameRef, { "p2_online": true });
@@ -497,12 +468,14 @@
 
         window.requestStartGame = function() {
             const data = window.onlineData;
-            if (!data || !data.p1_online || !data.p2_online) return;
+            if (!data || !data.p1_online || !data.p2_online) {
+                alert("اللاعب الآخر ليس جاهزاً بعد!");
+                return;
+            }
             window.fbUpdate(window.gameRef, { "gameStarted": true });
         };
 
         window.triggerActualStart = function() {
-            playSound('hit');
             startOverlay.style.display = 'none';
             ball.style.display = 'block';
             window.gameRunning = true;
@@ -510,13 +483,15 @@
 
             if (window.myRole === 1) {
                 resetBall(1);
+                window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
             }
             requestAnimationFrame(updateGame);
         };
 
+        // التحكم بالسلايدر بدون أي مؤثرات
         function handleSliderMove(clientX) {
             if (!window.gameRunning) return;
-            boxRect = gameBox.getBoundingClientRect();
+            const boxRectNow = gameBox.getBoundingClientRect();
             const sliderRect = sliderContainer.getBoundingClientRect();
             
             let relativeX = clientX - sliderRect.left;
@@ -525,7 +500,7 @@
 
             sliderKnob.style.left = `calc(${percentage * 100}% - 25px)`;
 
-            let currentX = percentage * (boxRect.width - paddleWidth);
+            let currentX = percentage * (boxRectNow.width - paddleWidth);
             myPaddleX = currentX;
             playerPaddle.style.left = myPaddleX + 'px';
 
@@ -533,15 +508,23 @@
             if (window.myRole === 1) {
                 dataToSend["playerX"] = myPaddleX;
             } else if (window.myRole === 2) {
-                let originalX = boxRect.width - paddleWidth - myPaddleX;
+                let originalX = boxRectNow.width - paddleWidth - myPaddleX;
+                if (originalX < 0) originalX = 0;
                 dataToSend["cpuX"] = originalX;
             }
             window.fbUpdate(window.gameRef, dataToSend);
         }
 
-        sliderContainer.addEventListener('touchstart', (e) => { handleSliderMove(e.touches[0].clientX); }, { passive: true });
-        sliderContainer.addEventListener('touchmove', (e) => { handleSliderMove(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+        sliderContainer.addEventListener('touchstart', (e) => { 
+            e.preventDefault();
+            handleSliderMove(e.touches[0].clientX); 
+        }, { passive: false });
+        sliderContainer.addEventListener('touchmove', (e) => { 
+            e.preventDefault();
+            handleSliderMove(e.touches[0].clientX); 
+        }, { passive: false });
         sliderContainer.addEventListener('mousedown', (e) => {
+            handleSliderMove(e.clientX);
             function onMouseMove(event) { handleSliderMove(event.clientX); }
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mouseup', () => { window.removeEventListener('mousemove', onMouseMove); }, { once: true });
@@ -551,8 +534,9 @@
             boxRect = gameBox.getBoundingClientRect();
             ballX = (boxRect.width / 2) - (ballSize / 2);
             ballY = (boxRect.height / 2) - (ballSize / 2);
-            ballSpeedX = (Math.random() - 0.5) * 5;
+            ballSpeedX = (Math.random() - 0.5) * 4.8;
             ballSpeedY = direction * initialSpeedY;
+            if (Math.abs(ballSpeedX) < 1.2) ballSpeedX = ballSpeedX > 0 ? 1.5 : -1.5;
         }
 
         function updateGame() {
@@ -565,57 +549,92 @@
                 ballX += ballSpeedX;
                 ballY += ballSpeedY;
 
-                if (ballX <= 0 || ballX >= boxRect.width - ballSize) {
+                // ارتطام الجدران الجانبية - بدون أي تأثير بصري أو صوتي
+                if (ballX <= 0) {
+                    ballX = 0;
                     ballSpeedX = -ballSpeedX;
-                    playSound('hit');
+                    // لا شيء
+                }
+                if (ballX >= boxRect.width - ballSize) {
+                    ballX = boxRect.width - ballSize;
+                    ballSpeedX = -ballSpeedX;
+                    // لا شيء
                 }
 
-                // اصطدام مضرب الخصم العلوي
-                if (ballY <= 25 + paddleHeight && ballY >= 25) {
+                // ارتطام مضرب الخصم العلوي - بدون تأثيرات
+                if (ballY <= 25 + paddleHeight && ballY >= 23) {
                     if (ballX + ballSize >= currentCpuX && ballX <= currentCpuX + paddleWidth) {
                         ballY = 25 + paddleHeight;
                         ballSpeedY = -ballSpeedY;
                         let hitPoint = (ballX + ballSize/2) - (currentCpuX + paddleWidth/2);
-                        ballSpeedX = hitPoint * 0.22;
-                        playSound('hit');
-                        triggerScreenShake();
+                        let maxAngle = 6;
+                        ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
+                        // صمت تام
                     }
                 }
 
-                // اصطدام مضربك السفلي
+                // ارتطام مضرب اللاعب السفلي - بدون تأثيرات
                 if (ballY >= boxRect.height - 25 - paddleHeight - ballSize && ballY <= boxRect.height - 25) {
                     if (ballX + ballSize >= myPaddleX && ballX <= myPaddleX + paddleWidth) {
                         ballY = boxRect.height - 25 - paddleHeight - ballSize;
                         ballSpeedY = -ballSpeedY;
                         let hitPoint = (ballX + ballSize/2) - (myPaddleX + paddleWidth/2);
-                        ballSpeedX = hitPoint * 0.22;
-                        playSound('hit');
-                        triggerScreenShake();
+                        let maxAngle = 6;
+                        ballSpeedX = Math.min(maxAngle, Math.max(-maxAngle, hitPoint * 0.28));
+                        // لا اهتزاز ولا صوت
                     }
                 }
 
-                // تسجيل هدف فعلي (الكرة عبرت الخطوط تماماً)
+                // تسجيل الأهداف: بدون أي تأثيرات إطلاقاً (لا نيون، لا اهتزاز، لا صوت، لا شيء)
                 if (ballY < 0) {
-                    let pScore = parseInt(document.getElementById('pScore').innerText) + 1;
-                    window.fbUpdate(window.gameRef, { "pScore": pScore });
-                    playSound('score');
-                    triggerScreenShake();
+                    let currentP = parseInt(document.getElementById('pScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { "pScore": currentP });
+                    // تم إزالة triggerScreenShake بالكامل
                     resetBall(-1);
-                } else if (ballY > boxRect.height) {
-                    let cScore = parseInt(document.getElementById('cScore').innerText) + 1;
-                    window.fbUpdate(window.gameRef, { "cScore": cScore });
-                    playSound('score');
-                    triggerScreenShake();
+                    window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
+                } 
+                else if (ballY > boxRect.height) {
+                    let currentC = parseInt(document.getElementById('cScore').innerText) + 1;
+                    window.fbUpdate(window.gameRef, { "cScore": currentC });
+                    // لا شيء مطلقاً
                     resetBall(1);
+                    window.fbUpdate(window.gameRef, { ballX: ballX, ballY: ballY });
                 }
 
+                // تحديث موقع الكرة
                 window.fbUpdate(window.gameRef, { "ballX": ballX, "ballY": ballY });
                 ball.style.left = ballX + 'px';
                 ball.style.top = ballY + 'px';
+            } 
+            else if (window.myRole === 2) {
+                // الدور الثاني: فقط عرض البيانات بدون أي تفاعل فيزيائي
+                const data = window.onlineData;
+                if (data && data.ballX !== undefined && data.ballY !== undefined && boxRect.width) {
+                    let invX = boxRect.width - ballSize - data.ballX;
+                    let invY = boxRect.height - ballSize - data.ballY;
+                    ball.style.left = invX + 'px';
+                    ball.style.top = invY + 'px';
+                }
+                if (data && data.playerX !== undefined) {
+                    let invPaddle = boxRect.width - paddleWidth - data.playerX;
+                    playerPaddle.style.left = invPaddle + 'px';
+                }
+                if (data && data.cpuX !== undefined) {
+                    cpuPaddle.style.left = data.cpuX + 'px';
+                }
+                if (data) {
+                    document.getElementById('pScore').innerText = data.pScore || 0;
+                    document.getElementById('cScore').innerText = data.cScore || 0;
+                }
             }
-
+            
             requestAnimationFrame(updateGame);
         }
+        
+        window.addEventListener('load', () => {
+            resizeGame();
+            setTimeout(resizeGame, 100);
+        });
     </script>
 </body>
-</html>
+</html> 
