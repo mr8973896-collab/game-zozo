@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Silent Pong - Pure Physics</title>
+    <title>Cyber Pong - Ultimate Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -32,7 +32,6 @@
             position: relative;
         }
 
-        /* Background video styling */
         #bgVideo {
             position: fixed;
             top: 0;
@@ -41,7 +40,7 @@
             height: 100%;
             object-fit: cover;
             z-index: -2;
-            opacity: 0.4;
+            opacity: 0.35;
             pointer-events: none;
         }
 
@@ -50,14 +49,14 @@
             max-width: 360px;
             flex: 1; 
             margin-bottom: 10px;
-            background: radial-gradient(circle, rgba(17,19,34,0.9) 0%, rgba(6,7,13,0.95) 100%);
+            background: radial-gradient(circle, rgba(17,19,34,0.85) 0%, rgba(6,7,13,0.95) 100%);
             border: 3px solid #00d2ff;
             border-radius: 20px;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.2);
             position: relative;
             overflow: hidden;
             touch-action: none;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(3px);
         }
 
         .control-slider-container {
@@ -101,7 +100,7 @@
         .net {
             position: absolute;
             top: 50%; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.15) 30%);
+            background: linear-gradient(to right, transparent 30%, rgba(0, 210, 255, 0.2) 30%);
             background-size: 15px 10px;
             transform: translateY(-50%);
         }
@@ -111,6 +110,7 @@
             width: 85px;
             height: 16px; 
             border-radius: 30px;
+            will-change: left;
         }
 
         .paddle-top { top: 25px; }
@@ -133,6 +133,7 @@
             border-radius: 50%;
             box-shadow: 0 0 25px #fffb00, 0 0 10px #fff;
             display: none;
+            will-change: left, top;
         }
 
         .score-display {
@@ -221,12 +222,11 @@
             box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
         }
 
-        /* Countdown style */
         .countdown-overlay {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,10 +253,8 @@
 </head>
 <body>
 
-    <!-- Background Video (music/ambient) -->
-    <video id="bgVideo" loop muted playsinline>
+    <video id="bgVideo" loop autoplay muted playsinline>
         <source src="document_5870803054739070390.mp4" type="video/mp4">
-        Your browser does not support the video tag.
     </video>
 
     <div class="game-container" id="gameBox">
@@ -268,7 +266,7 @@
         <div id="ball"></div>
 
         <div id="startOverlay" class="overlay">
-            <h2>⚡ SILENT PONG ⚡</h2>
+            <h2>⚡ CYBER PONG ⚡</h2>
             <div class="status-msg" id="statusMessage">Waiting for connection...</div>
             <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="Enter 1 or 2">
             <div class="btn-group">
@@ -358,7 +356,6 @@
     </script>
 
     <script>
-        // ------------------- DOM Elements -------------------
         const gameBox = document.getElementById('gameBox');
         const playerPaddleElem = document.getElementById('playerPaddle');
         const cpuPaddleElem = document.getElementById('cpuPaddle');
@@ -368,7 +365,6 @@
         const sliderKnob = document.getElementById('sliderKnob');
         const bgVideo = document.getElementById('bgVideo');
 
-        // ------------------- Global Variables -------------------
         window.myRole = 0;
         window.hasJoined = false;
         window.gameRunning = false;
@@ -386,23 +382,25 @@
         let ballX = (boxRect.width / 2) - (ballSize / 2);
         let ballY = (boxRect.height / 2) - (ballSize / 2);
         let ballSpeedX = 0, ballSpeedY = 0;
-        const initialSpeedY = 5.5;
+        const FAST_SPEED_Y = 7.2;
 
-        // Background video controller
         function playBackgroundVideo() {
-            bgVideo.muted = false; // unmute to hear audio
-            bgVideo.play().catch(e => console.log("Video autoplay blocked, user interaction needed"));
+            bgVideo.muted = false;
+            bgVideo.loop = true;
+            bgVideo.play().then(() => {
+                console.log("Background video playing smoothly");
+            }).catch(e => {
+                console.log("Auto-play blocked, but will start on user interaction");
+                document.body.addEventListener('click', () => bgVideo.play(), { once: true });
+            });
         }
 
-        // Countdown + start game logic
         window.startCountdownAndGame = function() {
             if (window.countdownActive || window.gameRunning) return;
             window.countdownActive = true;
             
-            // Play background video immediately (music/ambient)
             playBackgroundVideo();
             
-            // Create countdown overlay
             const countDiv = document.createElement('div');
             countDiv.className = 'countdown-overlay';
             document.body.appendChild(countDiv);
@@ -417,7 +415,6 @@
                     countDiv.innerHTML = `<div class="countdown-number" style="color:#ff3344;">GO!</div>`;
                     setTimeout(() => {
                         countDiv.remove();
-                        // Actually start the game
                         startOverlay.style.display = 'none';
                         ball.style.display = 'block';
                         window.gameRunning = true;
@@ -441,8 +438,7 @@
             window.boxRectH = boxRect.height;
             if (!window.gameRunning) return;
             let maxX = boxRect.width - paddleWidth;
-            if (myPaddleX > maxX) myPaddleX = maxX;
-            if (myPaddleX < 0) myPaddleX = 0;
+            myPaddleX = Math.min(maxX, Math.max(0, myPaddleX));
             playerPaddleElem.style.left = myPaddleX + 'px';
         }
         window.addEventListener('resize', resizeGame);
@@ -452,7 +448,10 @@
             if (type === 'player') playerPaddleElem.style.left = x + 'px';
             else if (type === 'cpu') cpuPaddleElem.style.left = x + 'px';
         };
-        window.updateBallPosition = (x, y) => { ball.style.left = x + 'px'; ball.style.top = y + 'px'; };
+        window.updateBallPosition = (x, y) => { 
+            ball.style.left = x + 'px'; 
+            ball.style.top = y + 'px'; 
+        };
 
         window.joinGame = function() {
             const roleInput = document.getElementById("playerRoleInput").value;
@@ -515,36 +514,33 @@
             boxRect = gameBox.getBoundingClientRect();
             ballX = (boxRect.width / 2) - BALL_RADIUS;
             ballY = (boxRect.height / 2) - BALL_RADIUS;
-            ballSpeedX = (Math.random() - 0.5) * 4.5;
-            ballSpeedY = direction * initialSpeedY;
-            if (Math.abs(ballSpeedX) < 1.2) ballSpeedX = ballSpeedX > 0 ? 1.8 : -1.8;
+            ballSpeedX = (Math.random() - 0.5) * 5.5;
+            ballSpeedY = direction * FAST_SPEED_Y;
+            if (Math.abs(ballSpeedX) < 1.5) ballSpeedX = ballSpeedX > 0 ? 2.2 : -2.2;
         }
 
         function handleCollision() {
-            // walls
             if (ballX <= 0) { ballX = 0; ballSpeedX = -ballSpeedX; }
             if (ballX >= boxRect.width - ballSize) { ballX = boxRect.width - ballSize; ballSpeedX = -ballSpeedX; }
 
-            // player paddle (bottom)
             const playerRect = { x: myPaddleX, y: boxRect.height - 25 - paddleHeight, w: paddleWidth, h: paddleHeight };
             const ballRect = { x: ballX, y: ballY, w: ballSize, h: ballSize };
             if (ballRect.x < playerRect.x + playerRect.w && ballRect.x + ballRect.w > playerRect.x &&
                 ballRect.y < playerRect.y + playerRect.h && ballRect.y + ballRect.h > playerRect.y) {
                 let hitPos = (ballX + BALL_RADIUS) - (playerRect.x + paddleWidth/2);
-                let angle = hitPos * 0.28;
-                ballSpeedX = Math.min(6, Math.max(-6, angle));
+                let angle = hitPos * 0.32;
+                ballSpeedX = Math.min(7, Math.max(-7, angle));
                 ballSpeedY = -Math.abs(ballSpeedY);
                 ballY = playerRect.y - ballSize;
             }
 
-            // opponent paddle (top)
             let cpuX = (window.myRole === 1) ? (window.onlineData?.cpuX ?? (boxRect.width/2 - paddleWidth/2)) : (window.onlineData?.playerX ?? (boxRect.width/2 - paddleWidth/2));
             const cpuRect = { x: cpuX, y: 25, w: paddleWidth, h: paddleHeight };
             if (ballRect.x < cpuRect.x + cpuRect.w && ballRect.x + ballRect.w > cpuRect.x &&
                 ballRect.y < cpuRect.y + cpuRect.h && ballRect.y + ballRect.h > cpuRect.y) {
                 let hitPos = (ballX + BALL_RADIUS) - (cpuRect.x + paddleWidth/2);
-                let angle = hitPos * 0.28;
-                ballSpeedX = Math.min(6, Math.max(-6, angle));
+                let angle = hitPos * 0.32;
+                ballSpeedX = Math.min(7, Math.max(-7, angle));
                 ballSpeedY = Math.abs(ballSpeedY);
                 ballY = cpuRect.y + paddleHeight;
             }
