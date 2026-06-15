@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>سايلنت بونج - فيزياء سلسة</title>
+    <title>Silent Pong - Pure Physics</title>
     <style>
         * {
             box-sizing: border-box;
@@ -29,6 +29,20 @@
             justify-content: space-between; 
             padding: calc(10px + env(safe-area-inset-top)) 10px calc(15px + env(safe-area-inset-bottom)) 10px;
             touch-action: none; 
+            position: relative;
+        }
+
+        /* Background video styling */
+        #bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.4;
+            pointer-events: none;
         }
 
         .game-container {
@@ -36,19 +50,20 @@
             max-width: 360px;
             flex: 1; 
             margin-bottom: 10px;
-            background: radial-gradient(circle, #111322 0%, #06070d 100%);
+            background: radial-gradient(circle, rgba(17,19,34,0.9) 0%, rgba(6,7,13,0.95) 100%);
             border: 3px solid #00d2ff;
             border-radius: 20px;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.2);
             position: relative;
             overflow: hidden;
             touch-action: none;
+            backdrop-filter: blur(2px);
         }
 
         .control-slider-container {
             width: 100%;
             max-width: 360px;
-            background: #111322;
+            background: #111322cc;
             border: 2px solid #00d2ff;
             border-radius: 15px;
             height: 55px;
@@ -59,6 +74,7 @@
             justify-content: center;
             touch-action: none;
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+            backdrop-filter: blur(4px);
         }
 
         .control-track {
@@ -145,7 +161,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 20;
             padding: 25px;
         }
 
@@ -204,9 +220,44 @@
             background: linear-gradient(135deg, #ff3344, #ff6600);
             box-shadow: 0 0 20px rgba(255, 51, 68, 0.4);
         }
+
+        /* Countdown style */
+        .countdown-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            font-size: 5rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #00d2ff;
+            text-shadow: 0 0 30px cyan;
+            backdrop-filter: blur(8px);
+            flex-direction: column;
+            gap: 20px;
+        }
+        .countdown-number {
+            font-size: 8rem;
+            animation: pulse 0.6s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Background Video (music/ambient) -->
+    <video id="bgVideo" loop muted playsinline>
+        <source src="document_5870803054739070390.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
     <div class="game-container" id="gameBox">
         <div id="cScore" class="score-display">0</div>
@@ -217,12 +268,12 @@
         <div id="ball"></div>
 
         <div id="startOverlay" class="overlay">
-            <h2>⚡ سايلنت بونج ⚡</h2>
-            <div class="status-msg" id="statusMessage">انتظر الاتصال ...</div>
-            <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="رقم 1 أو 2">
+            <h2>⚡ SILENT PONG ⚡</h2>
+            <div class="status-msg" id="statusMessage">Waiting for connection...</div>
+            <input type="number" id="playerRoleInput" pattern="[1-2]*" inputmode="numeric" min="1" max="2" placeholder="Enter 1 or 2">
             <div class="btn-group">
-                <button id="joinBtn" onclick="window.joinGame()">🚀 دخول الساحة</button>
-                <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">🔥 بدء المواجهة</button>
+                <button id="joinBtn" onclick="window.joinGame()">🚀 Join Arena</button>
+                <button id="startBtn" onclick="window.requestStartGame()" style="display: none;">🔥 Start Match</button>
             </div>
         </div>
     </div>
@@ -266,12 +317,12 @@
             const startBtn = document.getElementById("startBtn");
 
             if (!window.hasJoined) {
-                if (!data || (!data.p1_online && !data.p2_online)) statusMessage.innerText = "أدخل رقم 1 للتحكم بالأسفل (أحمر).";
-                else if (data.p1_online && !data.p2_online) statusMessage.innerHTML = "اللاعب الأول متصل (أحمر)<br>أدخل رقم 2 للعب بالأخضر.";
-                else if (data.p1_online && data.p2_online) statusMessage.innerText = "اللاعبان متصلان! اضغط 'بدء المواجهة'.";
+                if (!data || (!data.p1_online && !data.p2_online)) statusMessage.innerText = "Enter 1 to play as RED (bottom).";
+                else if (data.p1_online && !data.p2_online) statusMessage.innerHTML = "Player 1 is connected (RED)<br>Enter 2 to play as GREEN.";
+                else if (data.p1_online && data.p2_online) statusMessage.innerText = "Both connected! Press 'Start Match'.";
             } else {
                 if (data && data.p1_online && data.p2_online && !data.gameStarted) {
-                    statusMessage.innerHTML = "✅ اكتمل الاتصال! اضغط زر الانطلاق.";
+                    statusMessage.innerHTML = "✅ Connection ready! Press START.";
                     roleInput.style.display = "none";
                     joinBtn.style.display = "none";
                     startBtn.style.display = "block";
@@ -298,7 +349,9 @@
                             window.updateBallPosition(invX, invY);
                         }
                     }
-                    if (data.gameStarted === true && !window.gameRunning) window.triggerActualStart();
+                    if (data.gameStarted === true && !window.gameRunning && !window.countdownActive) {
+                        window.startCountdownAndGame();
+                    }
                 }
             }
         });
@@ -313,10 +366,13 @@
         const startOverlay = document.getElementById('startOverlay');
         const sliderContainer = document.getElementById('sliderContainer');
         const sliderKnob = document.getElementById('sliderKnob');
+        const bgVideo = document.getElementById('bgVideo');
 
+        // ------------------- Global Variables -------------------
         window.myRole = 0;
         window.hasJoined = false;
         window.gameRunning = false;
+        window.countdownActive = false;
 
         let boxRect = gameBox.getBoundingClientRect();
         window.boxRectW = boxRect.width;
@@ -324,15 +380,60 @@
         const paddleWidth = 85;
         const paddleHeight = 16;
         const ballSize = 20;
-        const PADDLE_Y_TOP = 25;
-        const PADDLE_Y_BOTTOM = (boxRect.height - 25 - paddleHeight);
-        const BALL_RADIUS = 10; // نصف القطر للكشف الدقيق
+        const BALL_RADIUS = 10;
 
         let myPaddleX = (boxRect.width / 2) - (paddleWidth / 2);
         let ballX = (boxRect.width / 2) - (ballSize / 2);
         let ballY = (boxRect.height / 2) - (ballSize / 2);
         let ballSpeedX = 0, ballSpeedY = 0;
         const initialSpeedY = 5.5;
+
+        // Background video controller
+        function playBackgroundVideo() {
+            bgVideo.muted = false; // unmute to hear audio
+            bgVideo.play().catch(e => console.log("Video autoplay blocked, user interaction needed"));
+        }
+
+        // Countdown + start game logic
+        window.startCountdownAndGame = function() {
+            if (window.countdownActive || window.gameRunning) return;
+            window.countdownActive = true;
+            
+            // Play background video immediately (music/ambient)
+            playBackgroundVideo();
+            
+            // Create countdown overlay
+            const countDiv = document.createElement('div');
+            countDiv.className = 'countdown-overlay';
+            document.body.appendChild(countDiv);
+            
+            let count = 3;
+            const showCount = () => {
+                if (count > 0) {
+                    countDiv.innerHTML = `<div class="countdown-number">${count}</div><div style="font-size:1.5rem">Get Ready</div>`;
+                    count--;
+                    setTimeout(showCount, 1000);
+                } else if (count === 0) {
+                    countDiv.innerHTML = `<div class="countdown-number" style="color:#ff3344;">GO!</div>`;
+                    setTimeout(() => {
+                        countDiv.remove();
+                        // Actually start the game
+                        startOverlay.style.display = 'none';
+                        ball.style.display = 'block';
+                        window.gameRunning = true;
+                        window.countdownActive = false;
+                        resizeGame();
+                        if (window.myRole === 1) { 
+                            resetBall(1); 
+                            window.fbUpdate(window.gameRef, { ballX, ballY }); 
+                        }
+                        requestAnimationFrame(updateGame);
+                    }, 600);
+                    count--;
+                }
+            };
+            showCount();
+        };
 
         function resizeGame() {
             boxRect = gameBox.getBoundingClientRect();
@@ -355,7 +456,7 @@
 
         window.joinGame = function() {
             const roleInput = document.getElementById("playerRoleInput").value;
-            if (roleInput !== "1" && roleInput !== "2") { alert("❌ يرجى كتابة 1 أو 2 فقط!"); return; }
+            if (roleInput !== "1" && roleInput !== "2") { alert("Please enter 1 or 2 only!"); return; }
             window.myRole = parseInt(roleInput);
             window.hasJoined = true;
             resizeGame();
@@ -383,17 +484,8 @@
         };
 
         window.requestStartGame = function() {
-            if (!window.onlineData?.p1_online || !window.onlineData?.p2_online) { alert("اللاعب الآخر ليس جاهزاً!"); return; }
+            if (!window.onlineData?.p1_online || !window.onlineData?.p2_online) { alert("Other player not ready!"); return; }
             window.fbUpdate(window.gameRef, { gameStarted: true });
-        };
-
-        window.triggerActualStart = function() {
-            startOverlay.style.display = 'none';
-            ball.style.display = 'block';
-            window.gameRunning = true;
-            resizeGame();
-            if (window.myRole === 1) { resetBall(1); window.fbUpdate(window.gameRef, { ballX, ballY }); }
-            requestAnimationFrame(updateGame);
         };
 
         function handleSliderMove(clientX) {
@@ -428,36 +520,33 @@
             if (Math.abs(ballSpeedX) < 1.2) ballSpeedX = ballSpeedX > 0 ? 1.8 : -1.8;
         }
 
-        // فيزياء دقيقة: منع التخلل والارتداد الطبيعي
         function handleCollision() {
-            // الجدران الجانبية (يمين/يسار)
+            // walls
             if (ballX <= 0) { ballX = 0; ballSpeedX = -ballSpeedX; }
             if (ballX >= boxRect.width - ballSize) { ballX = boxRect.width - ballSize; ballSpeedX = -ballSpeedX; }
 
-            // مضرب اللاعب السفلي (نفسه)
-            const playerPaddleRect = { x: myPaddleX, y: boxRect.height - 25 - paddleHeight, w: paddleWidth, h: paddleHeight };
+            // player paddle (bottom)
+            const playerRect = { x: myPaddleX, y: boxRect.height - 25 - paddleHeight, w: paddleWidth, h: paddleHeight };
             const ballRect = { x: ballX, y: ballY, w: ballSize, h: ballSize };
-            if (ballRect.x < playerPaddleRect.x + playerPaddleRect.w && ballRect.x + ballRect.w > playerPaddleRect.x &&
-                ballRect.y < playerPaddleRect.y + playerPaddleRect.h && ballRect.y + ballRect.h > playerPaddleRect.y) {
-                // ارتطام دقيق
-                let hitPos = (ballX + BALL_RADIUS) - (playerPaddleRect.x + paddleWidth/2);
+            if (ballRect.x < playerRect.x + playerRect.w && ballRect.x + ballRect.w > playerRect.x &&
+                ballRect.y < playerRect.y + playerRect.h && ballRect.y + ballRect.h > playerRect.y) {
+                let hitPos = (ballX + BALL_RADIUS) - (playerRect.x + paddleWidth/2);
                 let angle = hitPos * 0.28;
                 ballSpeedX = Math.min(6, Math.max(-6, angle));
                 ballSpeedY = -Math.abs(ballSpeedY);
-                // إزاحة الكرة لخارج المضرب لمنع التشبث
-                ballY = playerPaddleRect.y - ballSize;
+                ballY = playerRect.y - ballSize;
             }
 
-            // مضرب الخصم العلوي (يتم جلبه من البيانات)
+            // opponent paddle (top)
             let cpuX = (window.myRole === 1) ? (window.onlineData?.cpuX ?? (boxRect.width/2 - paddleWidth/2)) : (window.onlineData?.playerX ?? (boxRect.width/2 - paddleWidth/2));
-            const cpuPaddleRect = { x: cpuX, y: 25, w: paddleWidth, h: paddleHeight };
-            if (ballRect.x < cpuPaddleRect.x + cpuPaddleRect.w && ballRect.x + ballRect.w > cpuPaddleRect.x &&
-                ballRect.y < cpuPaddleRect.y + cpuPaddleRect.h && ballRect.y + ballRect.h > cpuPaddleRect.y) {
-                let hitPos = (ballX + BALL_RADIUS) - (cpuPaddleRect.x + paddleWidth/2);
+            const cpuRect = { x: cpuX, y: 25, w: paddleWidth, h: paddleHeight };
+            if (ballRect.x < cpuRect.x + cpuRect.w && ballRect.x + ballRect.w > cpuRect.x &&
+                ballRect.y < cpuRect.y + cpuRect.h && ballRect.y + ballRect.h > cpuRect.y) {
+                let hitPos = (ballX + BALL_RADIUS) - (cpuRect.x + paddleWidth/2);
                 let angle = hitPos * 0.28;
                 ballSpeedX = Math.min(6, Math.max(-6, angle));
                 ballSpeedY = Math.abs(ballSpeedY);
-                ballY = cpuPaddleRect.y + paddleHeight;
+                ballY = cpuRect.y + paddleHeight;
             }
         }
 
@@ -468,7 +557,6 @@
                 ballY += ballSpeedY;
                 handleCollision();
 
-                // تسجيل الأهداف (فقط عندما تخرج الكرة تماماً من الحقل)
                 if (ballY + ballSize < 0) {
                     let newScore = parseInt(document.getElementById('pScore').innerText) + 1;
                     window.fbUpdate(window.gameRef, { pScore: newScore });
@@ -503,4 +591,4 @@
         window.addEventListener('load', () => { resizeGame(); setTimeout(resizeGame, 100); });
     </script>
 </body>
-</html> 
+</html>
