@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyber Pong - Ultimate Edition</title>
+    <title>Cyber Pong - Final Perfect Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -40,7 +40,7 @@
             height: 100%;
             object-fit: cover;
             z-index: -2;
-            opacity: 0.35;
+            opacity: 0.4;
             pointer-events: none;
         }
 
@@ -56,7 +56,7 @@
             position: relative;
             overflow: hidden;
             touch-action: none;
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(2px);
         }
 
         .control-slider-container {
@@ -226,7 +226,7 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,7 +253,7 @@
 </head>
 <body>
 
-    <video id="bgVideo" loop autoplay muted playsinline>
+    <video id="bgVideo" loop playsinline>
         <source src="document_5870803054739070390.mp4" type="video/mp4">
     </video>
 
@@ -382,24 +382,21 @@
         let ballX = (boxRect.width / 2) - (ballSize / 2);
         let ballY = (boxRect.height / 2) - (ballSize / 2);
         let ballSpeedX = 0, ballSpeedY = 0;
-        const FAST_SPEED_Y = 7.2;
+        const FAST_SPEED_Y = 7.5;
 
-        function playBackgroundVideo() {
+        function playBackgroundVideoFromStart() {
+            bgVideo.pause();
+            bgVideo.currentTime = 0;
             bgVideo.muted = false;
             bgVideo.loop = true;
-            bgVideo.play().then(() => {
-                console.log("Background video playing smoothly");
-            }).catch(e => {
-                console.log("Auto-play blocked, but will start on user interaction");
-                document.body.addEventListener('click', () => bgVideo.play(), { once: true });
-            });
+            bgVideo.play().catch(e => console.log("Playback prevented until user interaction"));
         }
 
         window.startCountdownAndGame = function() {
             if (window.countdownActive || window.gameRunning) return;
             window.countdownActive = true;
             
-            playBackgroundVideo();
+            playBackgroundVideoFromStart();
             
             const countDiv = document.createElement('div');
             countDiv.className = 'countdown-overlay';
@@ -514,9 +511,9 @@
             boxRect = gameBox.getBoundingClientRect();
             ballX = (boxRect.width / 2) - BALL_RADIUS;
             ballY = (boxRect.height / 2) - BALL_RADIUS;
-            ballSpeedX = (Math.random() - 0.5) * 5.5;
+            ballSpeedX = (Math.random() - 0.5) * 6;
             ballSpeedY = direction * FAST_SPEED_Y;
-            if (Math.abs(ballSpeedX) < 1.5) ballSpeedX = ballSpeedX > 0 ? 2.2 : -2.2;
+            if (Math.abs(ballSpeedX) < 1.8) ballSpeedX = ballSpeedX > 0 ? 2.5 : -2.5;
         }
 
         function handleCollision() {
@@ -528,8 +525,8 @@
             if (ballRect.x < playerRect.x + playerRect.w && ballRect.x + ballRect.w > playerRect.x &&
                 ballRect.y < playerRect.y + playerRect.h && ballRect.y + ballRect.h > playerRect.y) {
                 let hitPos = (ballX + BALL_RADIUS) - (playerRect.x + paddleWidth/2);
-                let angle = hitPos * 0.32;
-                ballSpeedX = Math.min(7, Math.max(-7, angle));
+                let angle = hitPos * 0.34;
+                ballSpeedX = Math.min(7.5, Math.max(-7.5, angle));
                 ballSpeedY = -Math.abs(ballSpeedY);
                 ballY = playerRect.y - ballSize;
             }
@@ -539,8 +536,8 @@
             if (ballRect.x < cpuRect.x + cpuRect.w && ballRect.x + ballRect.w > cpuRect.x &&
                 ballRect.y < cpuRect.y + cpuRect.h && ballRect.y + ballRect.h > cpuRect.y) {
                 let hitPos = (ballX + BALL_RADIUS) - (cpuRect.x + paddleWidth/2);
-                let angle = hitPos * 0.32;
-                ballSpeedX = Math.min(7, Math.max(-7, angle));
+                let angle = hitPos * 0.34;
+                ballSpeedX = Math.min(7.5, Math.max(-7.5, angle));
                 ballSpeedY = Math.abs(ballSpeedY);
                 ballY = cpuRect.y + paddleHeight;
             }
@@ -587,4 +584,4 @@
         window.addEventListener('load', () => { resizeGame(); setTimeout(resizeGame, 100); });
     </script>
 </body>
-</html>
+</html> 
